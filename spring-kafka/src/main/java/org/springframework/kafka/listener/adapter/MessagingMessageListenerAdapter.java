@@ -288,7 +288,8 @@ public abstract class MessagingMessageListenerAdapter<K, V> implements ConsumerS
 			if (this.hasAckParameter && acknowledgment == null) {
 				throw new ListenerExecutionFailedException("invokeHandler Failed",
 						new IllegalStateException("No Acknowledgment available as an argument, "
-						+ "the listener container must have a MANUAL Ackmode to populate the Acknowledgment.", ex));
+								+ "the listener container must have a MANUAL Ackmode to populate the Acknowledgment.",
+								ex));
 			}
 			throw new ListenerExecutionFailedException(createMessagingErrorMessage("Listener method could not " +
 					"be invoked with the incoming message", message.getPayload()),
@@ -347,8 +348,8 @@ public abstract class MessagingMessageListenerAdapter<K, V> implements ConsumerS
 			boolean isByteArray = value instanceof byte[];
 			if (!(value == null || value instanceof String || isByteArray)) {
 				throw new IllegalStateException(
-					"replyTopic expression must evaluate to a String or byte[], it is: "
-					+ value.getClass().getName());
+						"replyTopic expression must evaluate to a String or byte[], it is: "
+								+ value.getClass().getName());
 			}
 			if (isByteArray) {
 				return new String((byte[]) value, StandardCharsets.UTF_8);
@@ -427,14 +428,14 @@ public abstract class MessagingMessageListenerAdapter<K, V> implements ConsumerS
 				.setHeader(KafkaHeaders.TOPIC, topic);
 		if (this.replyHeadersConfigurer != null) {
 			Map<String, Object> headersToCopy = ((Message<?>) source).getHeaders().entrySet().stream()
-				.filter(e -> {
-					String key = e.getKey();
-					return !key.equals(MessageHeaders.ID) && !key.equals(MessageHeaders.TIMESTAMP)
-							&& !key.equals(KafkaHeaders.CORRELATION_ID)
-							&& !key.startsWith(KafkaHeaders.RECEIVED);
-				})
-				.filter(e -> this.replyHeadersConfigurer.shouldCopy(e.getKey(), e.getValue()))
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+					.filter(e -> {
+						String key = e.getKey();
+						return !key.equals(MessageHeaders.ID) && !key.equals(MessageHeaders.TIMESTAMP)
+								&& !key.equals(KafkaHeaders.CORRELATION_ID)
+								&& !key.startsWith(KafkaHeaders.RECEIVED);
+					})
+					.filter(e -> this.replyHeadersConfigurer.shouldCopy(e.getKey(), e.getValue()))
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 			if (headersToCopy.size() > 0) {
 				builder.copyHeaders(headersToCopy);
 			}
@@ -488,42 +489,12 @@ public abstract class MessagingMessageListenerAdapter<K, V> implements ConsumerS
 					&& (methodParameter.getParameterAnnotations().length == 0
 					|| methodParameter.hasParameterAnnotation(Payload.class))) {
 				if (genericParameterType == null) {
-					genericParameterType = methodParameter.getGenericParameterType();
-					if (genericParameterType instanceof ParameterizedType) {
-						ParameterizedType parameterizedType = (ParameterizedType) genericParameterType;
-						if (parameterizedType.getRawType().equals(Message.class)) {
-							genericParameterType = ((ParameterizedType) genericParameterType)
-								.getActualTypeArguments()[0];
-						}
-						else if (parameterizedType.getRawType().equals(List.class)
-								&& parameterizedType.getActualTypeArguments().length == 1) { // NOSONAR complex
-							Type paramType = parameterizedType.getActualTypeArguments()[0];
-							this.isConsumerRecordList =	paramType.equals(ConsumerRecord.class)
-									|| (paramType instanceof ParameterizedType
-										&& ((ParameterizedType) paramType).getRawType().equals(ConsumerRecord.class)
-									|| (paramType instanceof WildcardType
-										&& ((WildcardType) paramType).getUpperBounds() != null
-										&& ((WildcardType) paramType).getUpperBounds().length > 0
-										&& ((WildcardType) paramType).getUpperBounds()[0] instanceof ParameterizedType
-										&& ((ParameterizedType) ((WildcardType)
-											paramType).getUpperBounds()[0]).getRawType().equals(ConsumerRecord.class))
-							);
-							boolean messageHasGeneric = paramType instanceof ParameterizedType
-									&& ((ParameterizedType) paramType).getRawType().equals(Message.class);
-							this.isMessageList = paramType.equals(Message.class) || messageHasGeneric;
-							if (messageHasGeneric) {
-								genericParameterType = ((ParameterizedType) paramType).getActualTypeArguments()[0];
-							}
-						}
-						else {
-							this.isConsumerRecords = parameterizedType.getRawType().equals(ConsumerRecords.class);
-						}
-					}
+					genericParameterType = extractGenericParameterTypFromMethodParameter(methodParameter);
 				}
 				else {
 					if (this.logger.isDebugEnabled()) {
 						this.logger.debug("Ambiguous parameters for target payload for method " + method
-										+ "; no inferred type available");
+								+ "; no inferred type available");
 					}
 					break;
 				}
@@ -534,7 +505,7 @@ public abstract class MessagingMessageListenerAdapter<K, V> implements ConsumerS
 			}
 			else if (methodParameter.hasParameterAnnotation(Header.class)) {
 				Header header = methodParameter.getParameterAnnotation(Header.class);
-				if (KafkaHeaders.GROUP_ID.equals(header.value())) {
+				if (header != null && KafkaHeaders.GROUP_ID.equals(header.value())) {
 					allowedBatchParameters++;
 				}
 			}
@@ -551,6 +522,7 @@ public abstract class MessagingMessageListenerAdapter<K, V> implements ConsumerS
 				}
 			}
 		}
+
 		boolean validParametersForBatch = method.getGenericParameterTypes().length <= allowedBatchParameters;
 
 		if (!validParametersForBatch) {
@@ -565,6 +537,41 @@ public abstract class MessagingMessageListenerAdapter<K, V> implements ConsumerS
 					() -> String.format(stateMessage, "List<Message<?>>"));
 		}
 		this.messageReturnType = KafkaUtils.returnTypeMessageOrCollectionOf(method);
+		return genericParameterType;
+	}
+
+	private Type extractGenericParameterTypFromMethodParameter(MethodParameter methodParameter) {
+		Type genericParameterType = methodParameter.getGenericParameterType();
+		if (genericParameterType instanceof ParameterizedType) {
+			ParameterizedType parameterizedType = (ParameterizedType) genericParameterType;
+			if (parameterizedType.getRawType().equals(Message.class)) {
+				genericParameterType = ((ParameterizedType) genericParameterType).getActualTypeArguments()[0];
+			}
+			else if (parameterizedType.getRawType().equals(List.class)
+					&& parameterizedType.getActualTypeArguments().length == 1) {
+
+				Type paramType = parameterizedType.getActualTypeArguments()[0];
+				this.isConsumerRecordList = paramType.equals(ConsumerRecord.class)
+						|| (paramType instanceof ParameterizedType
+						&& ((ParameterizedType) paramType).getRawType().equals(ConsumerRecord.class)
+						|| (paramType instanceof WildcardType
+						&& ((WildcardType) paramType).getUpperBounds() != null
+						&& ((WildcardType) paramType).getUpperBounds().length > 0
+						&& ((WildcardType) paramType).getUpperBounds()[0] instanceof ParameterizedType
+						&& ((ParameterizedType) ((WildcardType)
+						paramType).getUpperBounds()[0]).getRawType().equals(ConsumerRecord.class))
+				);
+				boolean messageHasGeneric = paramType instanceof ParameterizedType
+						&& ((ParameterizedType) paramType).getRawType().equals(Message.class);
+				this.isMessageList = paramType.equals(Message.class) || messageHasGeneric;
+				if (messageHasGeneric) {
+					genericParameterType = ((ParameterizedType) paramType).getActualTypeArguments()[0];
+				}
+			}
+			else {
+				this.isConsumerRecords = parameterizedType.getRawType().equals(ConsumerRecords.class);
+			}
+		}
 		return genericParameterType;
 	}
 
