@@ -2208,7 +2208,7 @@ thing2
 
 The following events are published by listener containers and their consumers:
 
-* `ContainerIdleEvent`: Issued when no messages have been received in `idleInterval` (if configured).
+* `ListenerContainerIdleEvent`: Issued when no messages have been received in `idleInterval` (if configured).
 * `NonResponsiveConsumerEvent`: Issued when the consumer appears to be blocked in the `poll` method.
 * `ConsumerPausedEvent`: Issued by each consumer when the container is paused.
 * `ConsumerResumedEvent`: Issued by each consumer when the container is resumed.
