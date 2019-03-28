@@ -534,7 +534,7 @@ public abstract class MessagingMessageListenerAdapter<K, V> implements ConsumerS
 			}
 			else if (methodParameter.hasParameterAnnotation(Header.class)) {
 				Header header = methodParameter.getParameterAnnotation(Header.class);
-				if (header.value().equals(KafkaHeaders.GROUP_ID)) {
+				if (KafkaHeaders.GROUP_ID.equals(header.value())) {
 					allowedBatchParameters++;
 				}
 			}
