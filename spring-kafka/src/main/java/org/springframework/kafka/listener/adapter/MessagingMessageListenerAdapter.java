@@ -548,7 +548,7 @@ public abstract class MessagingMessageListenerAdapter<K, V> implements ConsumerS
 				genericParameterType = ((ParameterizedType) genericParameterType).getActualTypeArguments()[0];
 			}
 			else if (parameterizedType.getRawType().equals(List.class)
-					&& parameterizedType.getActualTypeArguments().length == 1) {
+					&& parameterizedType.getActualTypeArguments().length == 1) { // NOSONAR
 
 				Type paramType = parameterizedType.getActualTypeArguments()[0];
 				this.isConsumerRecordList = paramType.equals(ConsumerRecord.class)
