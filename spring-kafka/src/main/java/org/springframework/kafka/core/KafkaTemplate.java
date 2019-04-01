@@ -159,6 +159,15 @@ public class KafkaTemplate<K, V> implements KafkaOperations<K, V> {
 		return this.transactional;
 	}
 
+	/**
+	 * Return the producer factory used by this template.
+	 * @return the factory.
+	 * @since 2.2.5
+	 */
+	public ProducerFactory<K, V> getProducerFactory() {
+		return this.producerFactory;
+	}
+
 	@Override
 	public ListenableFuture<SendResult<K, V>> sendDefault(@Nullable V data) {
 		return send(this.defaultTopic, data);
