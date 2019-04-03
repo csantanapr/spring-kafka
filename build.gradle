@@ -81,7 +81,7 @@ subprojects { subproject ->
 		kafkaVersion = '2.2.0'
 		log4jVersion = '2.11.2'
 		mockitoVersion = '2.24.0'
-		scalaVersion = '2.11'
+		scalaVersion = '2.12'
 		springRetryVersion = '1.2.4.RELEASE'
 		springVersion = '5.2.0.BUILD-SNAPSHOT'
 		springDataCommonsVersion = '2.2.0.BUILD-SNAPSHOT'

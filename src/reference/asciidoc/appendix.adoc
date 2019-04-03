@@ -36,14 +36,14 @@ When you use `spring-kafka-test` (version 2.2.x) with the 2.1.x `kafka-clients` 
 
 <dependency>
     <groupId>org.apache.kafka</groupId>
-    <artifactId>kafka_2.11</artifactId>
+    <artifactId>kafka_2.12</artifactId>
     <version>2.1.0</version>
     <scope>test</scope>
 </dependency>
 
 <dependency>
     <groupId>org.apache.kafka</groupId>
-    <artifactId>kafka_2.11</artifactId>
+    <artifactId>kafka_2.12</artifactId>
     <version>2.1.0</version>
     <classifier>test</classifier>
     <scope>test</scope>
