@@ -210,6 +210,14 @@ public interface KafkaOperations<K, V> {
 	void sendOffsetsToTransaction(Map<TopicPartition, OffsetAndMetadata> offsets, String consumerGroupId);
 
 	/**
+	 * Return true if the implementation supports transactions (has a transaction-capable
+	 * producer factory).
+	 * @return true or false.
+	 * @since 3.2
+	 */
+	boolean isTransactional();
+
+	/**
 	 * A callback for executing arbitrary operations on the {@link Producer}.
 	 * @param <K> the key type.
 	 * @param <V> the value type.
