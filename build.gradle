@@ -83,8 +83,8 @@ subprojects { subproject ->
 		mockitoVersion = '2.24.0'
 		scalaVersion = '2.12'
 		springRetryVersion = '1.2.4.RELEASE'
-		springVersion = '5.2.0.BUILD-SNAPSHOT'
-		springDataCommonsVersion = '2.2.0.BUILD-SNAPSHOT'
+		springVersion = '5.2.0.M1'
+		springDataCommonsVersion = '2.2.0.M3'
 		reactorVersion = '3.2.6.RELEASE'
 		reactorKafkaVersion = '1.1.0.RELEASE'
 
@@ -133,7 +133,7 @@ subprojects { subproject ->
 
 	checkstyle {
 		configFile = file("${rootDir}/src/checkstyle/checkstyle.xml")
-		toolVersion = "8.18"
+		toolVersion = "8.19"
 	}
 
 	jacocoTestReport {
