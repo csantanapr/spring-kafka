@@ -213,7 +213,7 @@ public interface KafkaOperations<K, V> {
 	 * Return true if the implementation supports transactions (has a transaction-capable
 	 * producer factory).
 	 * @return true or false.
-	 * @since 3.2
+	 * @since 2.3
 	 */
 	boolean isTransactional();
 
