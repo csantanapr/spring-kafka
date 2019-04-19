@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -85,15 +86,22 @@ public class ReplyingKafkaTemplate<K, V, R> extends KafkaTemplate<K, V> implemen
 
 	private boolean sharedReplyTopic;
 
+	private Function<ProducerRecord<K, V>, CorrelationKey> correlationStrategy =
+			ReplyingKafkaTemplate::defaultCorrelationIdStrategy;
+
 	private volatile boolean running;
+
+	private volatile boolean schedulerInitialized;
 
 	public ReplyingKafkaTemplate(ProducerFactory<K, V> producerFactory,
 			GenericMessageListenerContainer<K, R> replyContainer) {
+
 		this(producerFactory, replyContainer, false);
 	}
 
 	public ReplyingKafkaTemplate(ProducerFactory<K, V> producerFactory,
 			GenericMessageListenerContainer<K, R> replyContainer, boolean autoFlush) {
+
 		super(producerFactory, autoFlush);
 		Assert.notNull(replyContainer, "'replyContainer' cannot be null");
 		this.replyContainer = replyContainer;
@@ -127,6 +135,10 @@ public class ReplyingKafkaTemplate<K, V, R> extends KafkaTemplate<K, V> implemen
 		Assert.notNull(scheduler, "'scheduler' cannot be null");
 		this.scheduler = scheduler;
 		this.schedulerSet = true;
+	}
+
+	protected long getReplyTimeout() {
+		return this.replyTimeout;
 	}
 
 	public void setReplyTimeout(long replyTimeout) {
@@ -175,10 +187,22 @@ public class ReplyingKafkaTemplate<K, V, R> extends KafkaTemplate<K, V> implemen
 		this.sharedReplyTopic = sharedReplyTopic;
 	}
 
+	/**
+	 * Set a function to be called to establish a unique correlation key for each request
+	 * record.
+	 * @param correlationStrategy the function.
+	 * @since 2.3
+	 */
+	public void setCorrelationIdStrategy(Function<ProducerRecord<K, V>, CorrelationKey> correlationStrategy) {
+		Assert.notNull(correlationStrategy, "'correlationStrategy' cannot be null");
+		this.correlationStrategy = correlationStrategy;
+	}
+
 	@Override
 	public void afterPropertiesSet() {
-		if (!this.schedulerSet) {
+		if (!this.schedulerSet && !this.schedulerInitialized) {
 			((ThreadPoolTaskScheduler) this.scheduler).initialize();
+			this.schedulerInitialized = true;
 		}
 	}
 
@@ -214,7 +238,7 @@ public class ReplyingKafkaTemplate<K, V, R> extends KafkaTemplate<K, V> implemen
 	@Override
 	public RequestReplyFuture<K, V, R> sendAndReceive(ProducerRecord<K, V> record) {
 		Assert.state(this.running, "Template has not been start()ed"); // NOSONAR (sync)
-		CorrelationKey correlationId = createCorrelationId(record);
+		CorrelationKey correlationId = this.correlationStrategy.apply(record);
 		Assert.notNull(correlationId, "the created 'correlationId' cannot be null");
 		boolean hasReplyTopic = false;
 		Headers headers = record.headers();
@@ -234,7 +258,7 @@ public class ReplyingKafkaTemplate<K, V, R> extends KafkaTemplate<K, V> implemen
 		if (this.logger.isDebugEnabled()) {
 			this.logger.debug("Sending: " + record + WITH_CORRELATION_ID + correlationId);
 		}
-		TemplateRequestReplyFuture<K, V, R> future = new TemplateRequestReplyFuture<>();
+		RequestReplyFuture<K, V, R> future = new RequestReplyFuture<>();
 		this.futures.put(correlationId, future);
 		try {
 			future.setSendFuture(send(record));
@@ -254,9 +278,35 @@ public class ReplyingKafkaTemplate<K, V, R> extends KafkaTemplate<K, V> implemen
 				if (this.logger.isWarnEnabled()) {
 					this.logger.warn("Reply timed out for: " + record + WITH_CORRELATION_ID + correlationId);
 				}
-				removed.setException(new KafkaException("Reply timed out"));
+				if (!handleTimeout(correlationId, removed)) {
+					removed.setException(new KafkaReplyTimeoutException("Reply timed out"));
+				}
 			}
 		}, Instant.now().plusMillis(this.replyTimeout));
+	}
+
+	/**
+	 * Used to inform subclasses that a request has timed out so they can clean up state
+	 * and, optionally, complete the future.
+	 * @param correlationId the correlation id.
+	 * @param future the future.
+	 * @return true to indicate the future has been completed.
+	 * @since 2.3
+	 */
+	protected boolean handleTimeout(@SuppressWarnings("unused") CorrelationKey correlationId,
+			@SuppressWarnings("unused") RequestReplyFuture<K, V, R> future) {
+
+		return false;
+	}
+
+	/**
+	 * Return true if this correlation id is still active.
+	 * @param correlationId the correlation id.
+	 * @return true if pending.
+	 * @since 2.3
+	 */
+	protected boolean isPending(CorrelationKey correlationId) {
+		return this.futures.containsKey(correlationId);
 	}
 
 	@Override
@@ -271,8 +321,16 @@ public class ReplyingKafkaTemplate<K, V, R> extends KafkaTemplate<K, V> implemen
 	 * The default implementation is a 16 byte representation of a UUID.
 	 * @param record the record.
 	 * @return the key.
+	 * @deprecated in favor of {@link #setCorrelationIdStrategy(Function)}.
 	 */
+	@Deprecated
 	protected CorrelationKey createCorrelationId(ProducerRecord<K, V> record) {
+		return this.correlationStrategy.apply(record);
+	}
+
+	private static <K, V> CorrelationKey defaultCorrelationIdStrategy(
+			@SuppressWarnings("unused") ProducerRecord<K, V> record) {
+
 		UUID uuid = UUID.randomUUID();
 		byte[] bytes = new byte[16]; // NOSONAR magic #
 		ByteBuffer bb = ByteBuffer.wrap(bytes);
@@ -300,14 +358,7 @@ public class ReplyingKafkaTemplate<K, V, R> extends KafkaTemplate<K, V> implemen
 			else {
 				RequestReplyFuture<K, V, R> future = this.futures.remove(correlationId);
 				if (future == null) {
-					if (this.sharedReplyTopic) {
-						if (this.logger.isDebugEnabled()) {
-							this.logger.debug(missingCorrelationLogMessage(record, correlationId));
-						}
-					}
-					else if (this.logger.isErrorEnabled()) {
-						this.logger.error(missingCorrelationLogMessage(record, correlationId));
-					}
+					logLateArrival(record, correlationId);
 				}
 				else {
 					if (this.logger.isDebugEnabled()) {
@@ -319,25 +370,20 @@ public class ReplyingKafkaTemplate<K, V, R> extends KafkaTemplate<K, V> implemen
 		});
 	}
 
+	protected void logLateArrival(ConsumerRecord<K, R> record, CorrelationKey correlationId) {
+		if (this.sharedReplyTopic) {
+			if (this.logger.isDebugEnabled()) {
+				this.logger.debug(missingCorrelationLogMessage(record, correlationId));
+			}
+		}
+		else if (this.logger.isErrorEnabled()) {
+			this.logger.error(missingCorrelationLogMessage(record, correlationId));
+		}
+	}
+
 	private String missingCorrelationLogMessage(ConsumerRecord<K, R> record, CorrelationKey correlationId) {
 		return "No pending reply: " + record + WITH_CORRELATION_ID
 				+ correlationId + ", perhaps timed out, or using a shared reply topic";
-	}
-
-	/**
-	 * A listenable future for requests/replies.
-	 *
-	 * @param <K> the key type.
-	 * @param <V> the outbound data type.
-	 * @param <R> the reply data type.
-	 * TODO: Remove this in 2.3 - adds no value to the super class
-	 */
-	public static class TemplateRequestReplyFuture<K, V, R> extends RequestReplyFuture<K, V, R> {
-
-		TemplateRequestReplyFuture() {
-			super();
-		}
-
 	}
 
 }

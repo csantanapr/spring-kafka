@@ -168,8 +168,7 @@ You can also configure the template by using standard `<bean/>` definitions.
 
 Then, to use the template, you can invoke one of its methods.
 
-When you use the methods with a `Message<?>` parameter, the topic, partition, and key information is provided in a message
-header that includes the following items:
+When you use the methods with a `Message<?>` parameter, the topic, partition, and key information is provided in a message header that includes the following items:
 
 * `KafkaHeaders.TOPIC`
 * `KafkaHeaders.PARTITION_ID`
@@ -178,8 +177,7 @@ header that includes the following items:
 
 The message payload is the data.
 
-Optionally, you can configure the `KafkaTemplate` with a `ProducerListener` to get an asynchronous callback with the
-results of the send (success or failure) instead of waiting for the `Future` to complete.
+Optionally, you can configure the `KafkaTemplate` with a `ProducerListener` to get an asynchronous callback with the results of the send (success or failure) instead of waiting for the `Future` to complete.
 The following listing shows the definition of the `ProducerListener` interface:
 
 ====
@@ -197,18 +195,16 @@ public interface ProducerListener<K, V> {
 ----
 ====
 
-By default, the template is configured with a `LoggingProducerListener`, which logs errors and does nothing when the
-send is successful.
+By default, the template is configured with a `LoggingProducerListener`, which logs errors and does nothing when the send is successful.
 
 `onSuccess` is called only if `isInterestedInSuccess` returns `true`.
 
-For convenience, the abstract `ProducerListenerAdapter` is provided in case you want to implement only one of the
-methods.
+For convenience, the abstract `ProducerListenerAdapter` is provided in case you want to implement only one of the methods.
 It returns `false` for `isInterestedInSuccess`.
 
 Notice that the send methods return a `ListenableFuture<SendResult>`.
 You can register a callback with the listener to receive the result of the send asynchronously.
-The following examlpe shows how to do so:
+The following example shows how to do so:
 
 ====
 [source, java]
@@ -234,8 +230,7 @@ future.addCallback(new ListenableFutureCallback<SendResult<Integer, String>>() {
 See the Kafka API documentation for information about those objects.
 
 If you wish to block the sending thread to await the result, you can invoke the future's `get()` method.
-You may wish to invoke `flush()` before waiting or, for convenience, the template has a constructor with an `autoFlush`
-parameter that causes the template to `flush()` on each send.
+You may wish to invoke `flush()` before waiting or, for convenience, the template has a constructor with an `autoFlush` parameter that causes the template to `flush()` on each send.
 Note, however, that flushing likely significantly reduces performance.
 
 ====== Examples
@@ -567,10 +562,64 @@ In this case, though, the reply container must not use Kafka's group management 
 NOTE: The `DefaultKafkaHeaderMapper` requires Jackson to be on the classpath (for the `@KafkaListener`).
 If it is not available, the message converter has no header mapper, so you must configure a `MessagingMessageConverter` with a `SimpleKafkaHeaderMapper`, as shown earlier.
 
+[[aggregating-request-reply]]
+===== Aggregating Multiple Replies
+
+The template in <<replying-template>> is strictly for a single request/reply scenario.
+For cases where multiple receivers of a single message return a reply, you can use the `AggregatingReplyingKafkaTemplate`.
+This is an implementation of the client-side of the https://www.enterpriseintegrationpatterns.com/patterns/messaging/BroadcastAggregate.html[Scatter-Gather Enterprise Integration Pattern].
+
+Like the `ReplyingKafkaTemplate`, the `AggregatingReplyingKafkaTemplate` constructor takes a producer factory and a listener container to receive the replies; it has a third parameter `Predicate<Collection<ConsumerRecord<K, R>>> releaseStrategy` which is consulted each time a reply is received; when the predicate returns `true`, the collection of `ConsumerRecord` s is used to complete the `Future` returned by the `sendAndReceive` method.
+
+There is an additional property `returnPartialOnTimeout` (default false).
+When this is set to `true`, instead of completing the future with a `KafkaReplyTimeoutException`, a partial result completes the future normally (as long as at least one reply record has been received).
+
+====
+[source, java]
+----
+AggregatingReplyingKafkaTemplate<Integer, String, String> template =
+        new AggregatingReplyingKafkaTemplate<>(producerFactory, container,
+                        coll -> coll.size() == releaseSize);
+...
+RequestReplyFuture<Integer, String, Collection<ConsumerRecord<Integer, String>>> future =
+        template.sendAndReceive(record);
+future.getSendFuture().get(10, TimeUnit.SECONDS); // send ok
+ConsumerRecord<Integer, Collection<ConsumerRecord<Integer, String>>> consumerRecord =
+        future.get(30, TimeUnit.SECONDS);
+----
+====
+
+Notice that the return type is a `ConsumerRecord` with a value that is a collection of `ConsumerRecord` s.
+The "outer" `ConsumerRecord` is not a "real" record, it is synthesized by the template, as a holder for the actual reply records received for the request.
+When a normal release occurs (release strategy returns true), the topic is set to `aggregatedResults`; if `returnPartialOnTimeout` is true, and timeout occurs (and at least one reply record has been received), the topic is set to `partialResultsAfterTimeout`.
+The template provides constant static variables for these "topic" names:
+
+====
+[source, java]
+----
+/**
+ * Pseudo topic name for the "outer" {@link ConsumerRecords} that has the aggregated
+ * results in its value after a normal release by the release strategy.
+ */
+public static final String AGGREGATED_RESULTS_TOPIC = "aggregatedResults";
+
+/**
+ * Pseudo topic name for the "outer" {@link ConsumerRecords} that has the aggregated
+ * results in its value after a timeout.
+ */
+public static final String PARTIAL_RESULTS_AFTER_TIMEOUT_TOPIC = "partialResultsAfterTimeout";
+----
+====
+
+The real `ConsumerRecord` s in the `Collection` contain the actual topic(s) from which the replies are received.
+
+IMPORTANT: The listener container for the replies MUST be configured with `AckMode.MANUAL` or `AckMode.MANUAL_IMMEDIATE`; the consumer property `enable.auto.commit` must be `false` (the default since version 2.3).
+To avoid any possibility of losing messages, the template only commits offsets when there are zero requests outstanding, i.e. when the last outstanding request is released by the release strategy.
+After a rebalance, it is possible for duplicate reply deliveries; these will be ignored for any in-flight requests; you may see error log messages when duplicate replies are received for already released replies.
+
 ==== Receiving Messages
 
-You can receive messages by configuring a `MessageListenerContainer` and providing a message listener or by
-using the `@KafkaListener` annotation.
+You can receive messages by configuring a `MessageListenerContainer` and providing a message listener or by using the `@KafkaListener` annotation.
 
 [[message-listeners]]
 ===== Message Listeners
@@ -631,34 +680,26 @@ public interface BatchAcknowledgingConsumerAwareMessageListener<K, V> extends Ba
 }
 ----
 
-<1> Use this interface for processing individual `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when
-using auto-commit or one of the container-managed <<committing-offsets,commit methods>>.
+<1> Use this interface for processing individual `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when using auto-commit or one of the container-managed <<committing-offsets,commit methods>>.
 
-<2> Use this interface for processing individual `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when
-using one of the manual <<committing-offsets,commit methods>>.
+<2> Use this interface for processing individual `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when using one of the manual <<committing-offsets,commit methods>>.
 
-<3> Use this interface for processing individual `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when
-using auto-commit or one of the container-managed <<committing-offsets,commit methods>>.
+<3> Use this interface for processing individual `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when using auto-commit or one of the container-managed <<committing-offsets,commit methods>>.
 Access to the `Consumer` object is provided.
 
-<4> Use this interface for processing individual `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when
-using one of the manual <<committing-offsets,commit methods>>.
+<4> Use this interface for processing individual `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when using one of the manual <<committing-offsets,commit methods>>.
 Access to the `Consumer` object is provided.
 
-<5> Use this interface for processing all `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when
-using auto-commit or one of the container-managed <<committing-offsets,commit methods>>.
+<5> Use this interface for processing all `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when using auto-commit or one of the container-managed <<committing-offsets,commit methods>>.
 `AckMode.RECORD` is not supported when you use this interface, since the listener is given the complete batch.
 
-<6> Use this interface for processing all `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when
-using one of the manual <<committing-offsets,commit methods>>.
+<6> Use this interface for processing all `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when using one of the manual <<committing-offsets,commit methods>>.
 
-<7> Use this interface for processing all `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when
-using auto-commit or one of the container-managed <<committing-offsets,commit methods>>.
+<7> Use this interface for processing all `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when using auto-commit or one of the container-managed <<committing-offsets,commit methods>>.
 `AckMode.RECORD` is not supported when you use this interface, since the listener is given the complete batch.
 Access to the `Consumer` object is provided.
 
-<8> Use this interface for processing all `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when
-using one of the manual <<committing-offsets,commit methods>>.
+<8> Use this interface for processing all `ConsumerRecord` instances received from the Kafka consumer `poll()` operation when using one of the manual <<committing-offsets,commit methods>>.
 Access to the `Consumer` object is provided.
 ====
 
@@ -674,8 +715,7 @@ Two `MessageListenerContainer` implementations are provided:
 * `ConcurrentMessageListenerContainer`
 
 The `KafkaMessageListenerContainer` receives all message from all topics or partitions on a single thread.
-The `ConcurrentMessageListenerContainer` delegates to one or more `KafkaMessageListenerContainer` instances to provide
-multi-threaded consumption.
+The `ConcurrentMessageListenerContainer` delegates to one or more `KafkaMessageListenerContainer` instances to provide multi-threaded consumption.
 
 [[kafka-container]]
 ====== Using `KafkaMessageListenerContainer`
@@ -710,15 +750,13 @@ public ContainerProperties(Pattern topicPattern)
 ----
 ====
 
-The first constructor takes an array of `TopicPartitionInitialOffset` arguments to explicitly instruct the container about which partitions to use
-(using the consumer `assign()` method) and with an optional initial offset.
+The first constructor takes an array of `TopicPartitionInitialOffset` arguments to explicitly instruct the container about which partitions to use (using the consumer `assign()` method) and with an optional initial offset.
 A positive value is an absolute offset by default.
 A negative value is relative to the current last offset within a partition by default.
 A constructor for `TopicPartitionInitialOffset` that takes an additional `boolean` argument is provided.
 If this is `true`, the initial offsets (positive or negative) are relative to the current position for this consumer.
 The offsets are applied when the container is started.
-The second takes an array of topics, and Kafka allocates the partitions based on the `group.id` property -- distributing
-partitions across the group.
+The second takes an array of topics, and Kafka allocates the partitions based on the `group.id` property -- distributing partitions across the group.
 The third uses a regex `Pattern` to select the topics.
 
 To assign a `MessageListener` to a container, you can use the `ContainerProps.setMessageListener` method when creating the Container.
@@ -795,13 +833,11 @@ org.apache.kafka.clients.consumer.RoundRobinAssignor
 =====
 ====
 
-For the second constructor, the `ConcurrentMessageListenerContainer` distributes the `TopicPartition` instances across the
-delegate `KafkaMessageListenerContainer` instances.
+For the second constructor, the `ConcurrentMessageListenerContainer` distributes the `TopicPartition` instances across the delegate `KafkaMessageListenerContainer` instances.
 
 If, say, six `TopicPartition` instances are provided and the `concurrency` is `3`; each container gets two partitions.
 For five `TopicPartition` instances, two containers get two partitions, and the third gets one.
-If the `concurrency` is greater than the number of `TopicPartitions`, the `concurrency` is adjusted down such that
-each container gets one partition.
+If the `concurrency` is greater than the number of `TopicPartitions`, the `concurrency` is adjusted down such that each container gets one partition.
 
 NOTE: The `client.id` property (if set) is appended with `-n` where `n` is the consumer instance that corresponds to the concurrency.
 This is required to provide unique names for MBeans when JMX is enabled.
@@ -814,8 +850,7 @@ The metrics are grouped into the `Map<MetricName, ? extends Metric>` by the `cli
 ====== Committing Offsets
 
 Several options are provided for committing offsets.
-If the `enable.auto.commit` consumer property is `true`, Kafka auto-commits the offsets according to its
-configuration.
+If the `enable.auto.commit` consumer property is `true`, Kafka auto-commits the offsets according to its configuration.
 If it is `false`, the containers support several `AckMode` settings (described in the next list).
 
 The consumer `poll()` method returns one or more `ConsumerRecords`.
@@ -824,15 +859,12 @@ The following lists describes the action taken by the container for each `AckMod
 
 * `RECORD`: Commit the offset when the listener returns after processing the record.
 * `BATCH`: Commit the offset when all the records returned by the `poll()` have been processed.
-* `TIME`: Commit the offset when all the records returned by the `poll()` have been processed, as long as the `ackTime`
-since the last commit has been exceeded.
-* `COUNT`: Commit the offset when all the records returned by the `poll()` have been processed, as long as `ackCount`
-records have been received since the last commit.
+* `TIME`: Commit the offset when all the records returned by the `poll()` have been processed, as long as the `ackTime` since the last commit has been exceeded.
+* `COUNT`: Commit the offset when all the records returned by the `poll()` have been processed, as long as `ackCount` records have been received since the last commit.
 * `COUNT_TIME`: Similar to `TIME` and `COUNT`, but the commit is performed if either condition is `true`.
 * `MANUAL`: The message listener is responsible to `acknowledge()` the `Acknowledgment`.
 After that, the same semantics as `BATCH` are applied.
-* `MANUAL_IMMEDIATE`: Commit the offset immediately when the `Acknowledgment.acknowledge()` method is called by the
-listener.
+* `MANUAL_IMMEDIATE`: Commit the offset immediately when the `Acknowledgment.acknowledge()` method is called by the listener.
 
 NOTE: `MANUAL`, and `MANUAL_IMMEDIATE` require the listener to be an `AcknowledgingMessageListener` or a `BatchAcknowledgingMessageListener`.
 See <<message-listeners, Message Listeners>>.
@@ -1728,8 +1760,7 @@ You must configure the appropriate type to match the <<message-listeners,message
 
 To retry deliveries, a convenient listener adapter `RetryingMessageListenerAdapter`  is provided.
 
-You can configure it with a `RetryTemplate` and `RecoveryCallback<Void>` - see the https://github.com/spring-projects/spring-retry[spring-retry]
-project for information about these components.
+You can configure it with a `RetryTemplate` and `RecoveryCallback<Void>` - see the https://github.com/spring-projects/spring-retry[spring-retry] project for information about these components.
 If a recovery callback is not provided, the exception is thrown to the container after retries are exhausted.
 In that case, the `ErrorHandler` is invoked, if configured, or logged otherwise.
 
@@ -1822,8 +1853,7 @@ You can capture these events by implementing `ApplicationListener` -- either a g
 You can also use `@EventListener`, introduced in Spring Framework 4.2.
 
 The next example combines `@KafkaListener` and `@EventListener` into a single class.
-You should understand that the application listener gets events for all containers, so you may need to
-check the listener ID if you want to take specific action based on which container is idle.
+You should understand that the application listener gets events for all containers, so you may need to check the listener ID if you want to take specific action based on which container is idle.
 You can also use the `@EventListener` `condition` for this purpose.
 
 See <<events>> for information about event properties.
@@ -2286,9 +2316,7 @@ When you use this API, the `DefaultKafkaProducerFactory` and `DefaultKafkaConsum
 Spring for Apache Kafka also provides `JsonSerializer` and `JsonDeserializer` implementations that are based on the
 Jackson JSON object mapper.
 The `JsonSerializer` allows writing any Java object as a JSON `byte[]`.
-The `JsonDeserializer`
-requires an additional `Class<?> targetType` argument to allow the deserialization of a consumed `byte[]` to the proper target
-object.
+The `JsonDeserializer` requires an additional `Class<?> targetType` argument to allow the deserialization of a consumed `byte[]` to the proper target object.
 The following example shows how to create a `JsonDeserializer`:
 
 ====
@@ -2636,19 +2664,15 @@ public void listen1(List<Message<Foo>> fooMessages) {
 
 ===== `ConversionService` Customization
 
-Starting with version 2.1.1, the `org.springframework.core.convert.ConversionService` used by the default
-`o.s.messaging.handler.annotation.support.MessageHandlerMethodFactory` to resolve parameters for the invocation
-of a listener method is supplied with all beans that implement any of the following interfaces:
+Starting with version 2.1.1, the `org.springframework.core.convert.ConversionService` used by the default `o.s.messaging.handler.annotation.support.MessageHandlerMethodFactory` to resolve parameters for the invocation of a listener method is supplied with all beans that implement any of the following interfaces:
 
 * `org.springframework.core.convert.converter.Converter`
 * `org.springframework.core.convert.converter.GenericConverter`
 * `org.springframework.format.Formatter`
 
-This lets you further customize listener deserialization without changing the default configuration for
- `ConsumerFactory` and `KafkaListenerContainerFactory`.
+This lets you further customize listener deserialization without changing the default configuration for  `ConsumerFactory` and `KafkaListenerContainerFactory`.
 
-IMPORTANT: Setting a custom `MessageHandlerMethodFactory` on the `KafkaListenerEndpointRegistrar` through a
-`KafkaListenerConfigurer` bean disables this feature.
+IMPORTANT: Setting a custom `MessageHandlerMethodFactory` on the `KafkaListenerEndpointRegistrar` through a `KafkaListenerConfigurer` bean disables this feature.
 
 [[headers]]
 ==== Message Headers
@@ -2756,7 +2780,7 @@ public void testSpecificStringConvert() {
     Map<String, Boolean> rawMappedHeaders = new HashMap<>();
     rawMappedHeaders.put("thisOnesAString", true);
     rawMappedHeaders.put("thisOnesBytes", false);
-    mapper.setRawMappedHaeaders(rawMappedHeaders);
+    mapper.setRawMappedHeaders(rawMappedHeaders);
     Map<String, Object> headersMap = new HashMap<>();
     headersMap.put("thisOnesAString", "thing1");
     headersMap.put("thisOnesBytes", "thing2");
@@ -2805,7 +2829,7 @@ For convenience, the static `KafkaNull.INSTANCE` is provided.
 When you use a message listener container, the received `ConsumerRecord` has a `null` `value()`.
 
 To configure the `@KafkaListener` to handle `null` payloads, you must use the `@Payload` annotation with `required = false`.
-If itis a tombstone message for a compacted log, you usually also need the key so that your application can determine which key was "`deleted`".
+If it is a tombstone message for a compacted log, you usually also need the key so that your application can determine which key was "`deleted`".
 The following example shows such a configuration:
 
 ====
@@ -3026,7 +3050,7 @@ public interface RemainingRecordsErrorHandler extends ConsumerAwareErrorHandler 
 ====
 
 This interface lets implementations seek all unprocessed topics and partitions so that the current record (and the others remaining) are retrieved by the next poll.
-`SeekToCurrentErrorHandler` does exactly this.
+The `SeekToCurrentErrorHandler` does exactly this.
 
 IMPORTANT: `ackOnError` must be `false` (which is the default).
 Otherwise, if the container is stopped after the seek, but before the record is reprocessed, the record will be skipped when the container is restarted.
