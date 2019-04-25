@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Header;
@@ -58,16 +57,18 @@ public class AggregatingReplyingKafkaTemplate<K, V, R>
 		implements BatchConsumerAwareMessageListener<K, Collection<ConsumerRecord<K, R>>> {
 
 	/**
-	 * Pseudo topic name for the "outer" {@link ConsumerRecords} that has the aggregated
+	 * Pseudo topic name for the "outer" {@link ConsumerRecord} that has the aggregated
 	 * results in its value after a normal release by the release strategy.
 	 */
 	public static final String AGGREGATED_RESULTS_TOPIC = "aggregatedResults";
 
 	/**
-	 * Pseudo topic name for the "outer" {@link ConsumerRecords} that has the aggregated
+	 * Pseudo topic name for the "outer" {@link ConsumerRecord} that has the aggregated
 	 * results in its value after a timeout.
 	 */
 	public static final String PARTIAL_RESULTS_AFTER_TIMEOUT_TOPIC = "partialResultsAfterTimeout";
+
+	private static final int DEFAULT_COMMIT_TIMEOUT = 30;
 
 	private final Map<CorrelationKey, Set<RecordHolder<K, R>>> pending = new HashMap<>();
 
@@ -75,7 +76,7 @@ public class AggregatingReplyingKafkaTemplate<K, V, R>
 
 	private final Predicate<Collection<ConsumerRecord<K, R>>> releaseStrategy;
 
-	private Duration commitTimeout = Duration.ofSeconds(30);
+	private Duration commitTimeout = Duration.ofSeconds(DEFAULT_COMMIT_TIMEOUT);
 
 	private boolean returnPartialOnTimeout;
 
@@ -111,7 +112,7 @@ public class AggregatingReplyingKafkaTemplate<K, V, R>
 	 * Set to true to return a partial result when a request times out.
 	 * @param returnPartialOnTimeout true to return a partial result.
 	 */
-	public void setReturnPartialOnTimeout(boolean returnPartialOnTimeout) {
+	public synchronized void setReturnPartialOnTimeout(boolean returnPartialOnTimeout) {
 		this.returnPartialOnTimeout = returnPartialOnTimeout;
 	}
 

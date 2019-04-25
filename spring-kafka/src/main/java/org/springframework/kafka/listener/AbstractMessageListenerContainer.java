@@ -64,6 +64,8 @@ public abstract class AbstractMessageListenerContainer<K, V>
 	 */
 	public static final int DEFAULT_PHASE = Integer.MAX_VALUE - 100; // late phase
 
+	private static final int DEFAULT_TOPIC_CHECK_TIMEOUT = 30;
+
 	protected final Log logger = LogFactory.getLog(this.getClass()); // NOSONAR
 
 	protected final ConsumerFactory<K, V> consumerFactory; // NOSONAR (final)
@@ -84,6 +86,8 @@ public abstract class AbstractMessageListenerContainer<K, V>
 
 	private AfterRollbackProcessor<? super K, ? super V> afterRollbackProcessor =
 			new DefaultAfterRollbackProcessor<>();
+
+	private int topicCheckTimeout = DEFAULT_TOPIC_CHECK_TIMEOUT;
 
 	private volatile boolean running = false;
 
@@ -265,6 +269,16 @@ public abstract class AbstractMessageListenerContainer<K, V>
 		return this.beanName; // the container factory sets the bean name to the id attribute
 	}
 
+	/**
+	 * How long to wait for {@link AdminClient#describeTopics(Collection)} result
+	 * futures to complete.
+	 * @param topicCheckTimeout the timeout in seconds; default 30.
+	 * @since 2.3
+	 */
+	public void setTopicCheckTimeout(int topicCheckTimeout) {
+		this.topicCheckTimeout = topicCheckTimeout;
+	}
+
 	@Override
 	public void setupMessageListener(Object messageListener) {
 		this.containerProperties.setMessageListener(messageListener);
@@ -304,7 +318,7 @@ public abstract class AbstractMessageListenerContainer<K, V>
 						.stream()
 						.filter(entry -> {
 							try {
-								entry.getValue().get(30, TimeUnit.SECONDS);
+								entry.getValue().get(this.topicCheckTimeout, TimeUnit.SECONDS);
 								return false;
 							}
 							catch (@SuppressWarnings("unused") Exception e) {
