@@ -852,6 +852,9 @@ The metrics are grouped into the `Map<MetricName, ? extends Metric>` by the `cli
 Several options are provided for committing offsets.
 If the `enable.auto.commit` consumer property is `true`, Kafka auto-commits the offsets according to its configuration.
 If it is `false`, the containers support several `AckMode` settings (described in the next list).
+The default `AckMode` is `BATCH`.
+Starting with version 2.3, the framework sets `enable.auto.commit` to `false` unless explicitly set in the configuration.
+Previously, the Kafka default (`true`) was used if the property was not set.
 
 The consumer `poll()` method returns one or more `ConsumerRecords`.
 The `MessageListener` is called for each record.
