@@ -53,7 +53,7 @@ public final class SeekUtils {
 	 * @param exception the exception
 	 * @param recoverable true if skipping the first record is allowed.
 	 * @param skipper function to determine whether or not to skip seeking the first.
-	 * @param logger a {@link Log} for seek errors.
+	 * @param logger a {@link LogAccessor} for seek errors.
 	 * @return true if the failed record was skipped.
 	 */
 	public static boolean doSeeks(List<ConsumerRecord<?, ?>> records, Consumer<?, ?> consumer, Exception exception,
