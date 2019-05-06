@@ -189,6 +189,7 @@ There must only be one such bean, or one must be marked `@Primary`.
 By default, when the factory bean is stopped, the `KafkaStreams.cleanUp()` method is called.
 Starting with version 2.1.2, the factory bean has additional constructors, taking a `CleanupConfig` object that has properties to let you control whether the `cleanUp()` method is called during `start()` or `stop()` or neither.
 
+[[streams-header-enricher]]
 ==== Header Enricher
 
 Version 2.3 added the `HeaderEnricher` implementation of `Transformer`.
