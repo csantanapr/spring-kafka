@@ -1,4 +1,4 @@
-[[kafka-streams]]
+[[streams-kafka-streams]]
 === Kafka Streams Support
 
 Starting with version 1.1.4, Spring for Apache Kafka provides first-class support for https://kafka.apache.org/documentation/streams[Kafka Streams].

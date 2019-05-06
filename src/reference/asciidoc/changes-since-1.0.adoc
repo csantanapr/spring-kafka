@@ -101,7 +101,7 @@ The `StreamsBuilderFactoryBean` has been moved from package `...core` to `...con
 
 The `KafkaStreamBrancher` has been introduced for better end-user experience when conditional branches are built on top of `KStream` instance.
 
-See <<kafka-streams>> and <<streams-config>> for more information.
+See <<streams-kafka-streams>> and <<streams-config>> for more information.
 
 
 ==== Transactional ID
