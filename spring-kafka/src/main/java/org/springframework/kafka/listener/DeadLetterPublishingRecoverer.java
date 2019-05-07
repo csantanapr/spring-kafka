@@ -23,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 import org.apache.commons.logging.LogFactory;
@@ -44,7 +43,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
- * A {@link BiConsumer} that publishes a failed record to a dead-letter topic.
+ * A {@link ConsumerRecordRecoverer} that publishes a failed record to a dead-letter
+ * topic.
  *
  * @author Gary Russell
  * @since 2.2
