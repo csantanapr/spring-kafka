@@ -83,8 +83,8 @@ subprojects { subproject ->
 		mockitoVersion = '2.26.0'
 		scalaVersion = '2.12'
 		springRetryVersion = '1.2.4.RELEASE'
-		springVersion = '5.2.0.M1'
-		springDataCommonsVersion = '2.2.0.M3'
+		springVersion = '5.2.0.M2'
+		springDataCommonsVersion = '2.2.0.M4'
 		reactorVersion = '3.2.8.RELEASE'
 		reactorKafkaVersion = '1.1.0.RELEASE'
 
