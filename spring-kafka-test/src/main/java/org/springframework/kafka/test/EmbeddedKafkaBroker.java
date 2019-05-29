@@ -186,7 +186,7 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 	public EmbeddedKafkaBroker kafkaPorts(int... ports) {
 		Assert.isTrue(ports.length == this.count, "A port must be provided for each instance ["
 				+ this.count + "], provided: " + Arrays.toString(ports) + ", use 0 for a random port");
-		this.kafkaPorts = ports;
+		this.kafkaPorts = Arrays.copyOf(ports, ports.length);
 		return this;
 	}
 
