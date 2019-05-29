@@ -428,11 +428,16 @@ public class DefaultKafkaProducerFactory<K, V> implements ProducerFactory<K, V>,
 				(String) newProducerConfigs.get(ProducerConfig.TRANSACTIONAL_ID_CONFIG));
 	}
 
+	@Nullable
 	protected BlockingQueue<CloseSafeProducer<K, V>> getCache() {
 		return getCache(this.transactionIdPrefix);
 	}
 
+	@Nullable
 	protected BlockingQueue<CloseSafeProducer<K, V>> getCache(String txIdPrefix) {
+		if (txIdPrefix == null) {
+			return null;
+		}
 		return this.cache.computeIfAbsent(txIdPrefix, txId -> new LinkedBlockingQueue<>());
 	}
 
