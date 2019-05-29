@@ -407,6 +407,7 @@ public class DefaultKafkaProducerFactory<K, V> implements ProducerFactory<K, V>,
 
 	protected Producer<K, V> createTransactionalProducer(String txIdPrefix) {
 		BlockingQueue<CloseSafeProducer<K, V>> queue = getCache(txIdPrefix);
+		Assert.notNull(queue, () -> "No cache found for " + txIdPrefix);
 		Producer<K, V> cachedProducer = queue.poll();
 		if (cachedProducer == null) {
 			return doCreateTxProducer(txIdPrefix, "" + this.transactionIdSuffix.getAndIncrement(), null);
