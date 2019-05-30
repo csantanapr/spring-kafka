@@ -73,7 +73,7 @@ subprojects { subproject ->
 		googleJsr305Version = '3.0.2'
 		hamcrestVersion = '1.3'
 		hibernateValidationVersion = '6.0.16.Final'
-		jacksonVersion = '2.9.8'
+		jacksonVersion = '2.9.9'
 		jaywayJsonPathVersion = '2.4.0'
 		junit4Version = '4.12'
 		junitJupiterVersion = '5.4.2'
