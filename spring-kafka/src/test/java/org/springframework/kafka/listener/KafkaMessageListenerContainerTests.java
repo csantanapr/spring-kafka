@@ -2064,7 +2064,7 @@ public class KafkaMessageListenerContainerTests {
 			}
 			return first.getAndSet(false) ? consumerRecords : emptyRecords;
 		});
-		final CountDownLatch commitLatch = new CountDownLatch(2);
+		final CountDownLatch commitLatch = new CountDownLatch(3);
 		willAnswer(i -> {
 			commitLatch.countDown();
 			return null;
