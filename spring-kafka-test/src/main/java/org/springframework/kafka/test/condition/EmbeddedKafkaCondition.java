@@ -47,6 +47,8 @@ import org.springframework.util.StringUtils;
  * JUnit5 condition for an embedded broker.
  *
  * @author Gary Russell
+ * @author Artem Bilan
+ *
  * @since 2.3
  *
  */
@@ -84,20 +86,17 @@ public class EmbeddedKafkaCondition implements ExecutionCondition, AfterAllCallb
 	@Override
 	public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
 		Optional<AnnotatedElement> element = context.getElement();
-		if (element.isPresent()) {
-			/*
-			 * When running in a spring test context, the EmbeddedKafkaContextCustomizer will
-			 * create the broker.
-			 */
-			if (AnnotatedElementUtils.findMergedAnnotation(element.get(), SpringJUnitConfig.class) == null) {
-				EmbeddedKafka embedded = AnnotatedElementUtils.findMergedAnnotation(element.get(), EmbeddedKafka.class);
-				if (embedded != null) {
-					EmbeddedKafkaBroker broker = getBrokerFromStore(context);
-					if (broker == null) {
-						broker = createBroker(embedded);
-						BROKERS.set(broker);
-						getStore(context).put(EMBEDDED_BROKER, broker);
-					}
+		if (element.isPresent() &&
+				AnnotatedElementUtils.findMergedAnnotation(element.get(), SpringJUnitConfig.class) == null) {
+
+			EmbeddedKafka embedded = AnnotatedElementUtils.findMergedAnnotation(element.get(), EmbeddedKafka.class);
+			// When running in a spring test context, the EmbeddedKafkaContextCustomizer will create the broker.
+			if (embedded != null) {
+				EmbeddedKafkaBroker broker = getBrokerFromStore(context);
+				if (broker == null) {
+					broker = createBroker(embedded);
+					BROKERS.set(broker);
+					getStore(context).put(EMBEDDED_BROKER, broker);
 				}
 			}
 		}
@@ -108,7 +107,7 @@ public class EmbeddedKafkaCondition implements ExecutionCondition, AfterAllCallb
 	private EmbeddedKafkaBroker createBroker(EmbeddedKafka embedded) {
 		EmbeddedKafkaBroker broker;
 		broker = new EmbeddedKafkaBroker(embedded.count(),
-			embedded.controlledShutdown(), embedded.topics());
+				embedded.controlledShutdown(), embedded.topics());
 		broker.kafkaPorts(embedded.ports());
 		Properties properties = new Properties();
 
@@ -135,7 +134,7 @@ public class EmbeddedKafkaCondition implements ExecutionCondition, AfterAllCallb
 			try (InputStream in = propertiesResource.getInputStream()) {
 				Properties p = new Properties();
 				p.load(in);
-				p.forEach((key, value) -> properties.putIfAbsent(key, value));
+				p.forEach(properties::putIfAbsent);
 			}
 			catch (IOException ex) {
 				throw new IllegalStateException(
@@ -148,10 +147,9 @@ public class EmbeddedKafkaCondition implements ExecutionCondition, AfterAllCallb
 	}
 
 	private EmbeddedKafkaBroker getBrokerFromStore(ExtensionContext context) {
-		EmbeddedKafkaBroker broker = getParentStore(context).get(EMBEDDED_BROKER, EmbeddedKafkaBroker.class) == null
+		return getParentStore(context).get(EMBEDDED_BROKER, EmbeddedKafkaBroker.class) == null
 				? getStore(context).get(EMBEDDED_BROKER, EmbeddedKafkaBroker.class)
 				: getParentStore(context).get(EMBEDDED_BROKER, EmbeddedKafkaBroker.class);
-		return broker;
 	}
 
 	private Store getStore(ExtensionContext context) {
