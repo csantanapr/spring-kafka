@@ -34,7 +34,7 @@ import org.springframework.util.Assert;
 
 /**
  * A {@link Transformer} implementation that invokes a {@link MessagingFunction}
- * converting to/from spring-messaging {@link Message}. Can be used, for examploe,
+ * converting to/from spring-messaging {@link Message}. Can be used, for example,
  * to invoke a Spring Integration flow.
  *
  * @param <K> the key type.
