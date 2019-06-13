@@ -2000,6 +2000,75 @@ See <<idle-containers>> for how to enable idle container detection.
 
 To arbitrarily seek at runtime, use the callback reference from the `registerSeekCallback` for the appropriate thread.
 
+Here is a trivial Spring Boot application that demonstrates how to use the callback; it sends 10 records to the topic; hitting `<Enter>` in the console causes all partitions to seek to the beginning.
+
+====
+[source, java]
+----
+@SpringBootApplication
+public class SeekExampleApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(SeekExampleApplication.class, args);
+    }
+
+    @Bean
+    public ApplicationRunner runner(Listener listener, KafkaTemplate<String, String> template) {
+        return args -> {
+            IntStream.range(0, 10).forEach(i -> template.send(
+                new ProducerRecord<>("seekExample", i % 3, "foo", "bar")));
+            while (true) {
+                System.in.read();
+                listener.seekToStart();
+            }
+        };
+    }
+
+    @Bean
+    public NewTopic topic() {
+        return new NewTopic("seekExample", 3, (short) 1);
+    }
+
+}
+
+@Component
+class Listener implements ConsumerSeekAware {
+
+
+    private static final Logger logger = LoggerFactory.getLogger(Listener.class);
+
+
+    private final Map<TopicPartition, ConsumerSeekCallback> callbacks = new ConcurrentHashMap<>();
+
+    private static final ThreadLocal<ConsumerSeekCallback> callbackForThread = new ThreadLocal<>();
+
+    @Override
+    public void registerSeekCallback(ConsumerSeekCallback callback) {
+        callbackForThread.set(callback);
+    }
+
+    @Override
+    public void onPartitionsAssigned(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
+        assignments.keySet().forEach(tp -> this.callbacks.put(tp, callbackForThread.get()));
+    }
+
+    @Override
+    public void onIdleContainer(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
+    }
+
+    @KafkaListener(id = "seekExample", topics = "seekExample", concurrency = "3")
+    public void listen(ConsumerRecord<String, String> in) {
+        logger.info(in.toString());
+    }
+
+    public void seekToStart() {
+        this.callbacks.forEach((tp, callback) -> callback.seekToBeginning(tp.topic(), tp.partition()));
+    }
+
+}
+----
+====
+
 [[container-factory]]
 ===== Container factory
 
