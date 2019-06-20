@@ -42,6 +42,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdNodeBasedDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 /**
@@ -66,12 +67,6 @@ public class DefaultKafkaHeaderMapper extends AbstractKafkaHeaderMapper {
 					"org.springframework.util"
 			);
 
-	private static final List<String> DEFAULT_TO_STRING_CLASSES =
-			Arrays.asList(
-					"org.springframework.util.MimeType",
-					"org.springframework.http.MediaType"
-			);
-
 	/**
 	 * Header name for java types of other headers.
 	 */
@@ -81,7 +76,7 @@ public class DefaultKafkaHeaderMapper extends AbstractKafkaHeaderMapper {
 
 	private final Set<String> trustedPackages = new LinkedHashSet<>(DEFAULT_TRUSTED_PACKAGES);
 
-	private final Set<String> toStringClasses = new LinkedHashSet<>(DEFAULT_TO_STRING_CLASSES);
+	private final Set<String> toStringClasses = new LinkedHashSet<>();
 
 	/**
 	 * Construct an instance with the default object mapper and default header patterns
@@ -269,8 +264,8 @@ public class DefaultKafkaHeaderMapper extends AbstractKafkaHeaderMapper {
 						}
 						catch (IOException e) {
 							logger.error(e, () ->
-								"Could not decode json type: " + new String(header.value()) + " for key: "
-								+ header.key());
+									"Could not decode json type: " + new String(header.value()) + " for key: "
+											+ header.key());
 							headers.put(header.key(), header.value());
 						}
 					}
@@ -361,14 +356,19 @@ public class DefaultKafkaHeaderMapper extends AbstractKafkaHeaderMapper {
 
 		@Override
 		public MimeType convert(JsonNode root, DeserializationContext ctxt) throws IOException {
-			JsonNode type = root.get("type");
-			JsonNode subType = root.get("subtype");
-			JsonNode parameters = root.get("parameters");
-			Map<String, String> params =
-					DefaultKafkaHeaderMapper.this.objectMapper.readValue(parameters.traverse(),
-							TypeFactory.defaultInstance()
-									.constructMapType(HashMap.class, String.class, String.class));
-			return new MimeType(type.asText(), subType.asText(), params);
+			if (root instanceof TextNode) {
+				return MimeType.valueOf(root.asText());
+			}
+			else {
+				JsonNode type = root.get("type");
+				JsonNode subType = root.get("subtype");
+				JsonNode parameters = root.get("parameters");
+				Map<String, String> params =
+						DefaultKafkaHeaderMapper.this.objectMapper.readValue(parameters.traverse(),
+								TypeFactory.defaultInstance()
+										.constructMapType(HashMap.class, String.class, String.class));
+				return new MimeType(type.asText(), subType.asText(), params);
+			}
 		}
 
 	}
