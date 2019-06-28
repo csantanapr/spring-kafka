@@ -24,6 +24,7 @@ import org.apache.kafka.common.header.Headers;
  * Class containing all the contextual information around a deserialization error.
  *
  * @author Victor Perez Rey
+ * @author Artem Bilan
  *
  * @since 2.2.8
  */
@@ -52,7 +53,7 @@ public class FailedDeserializationInfo {
 
 		this.topic = topic;
 		this.headers = headers;
-		this.data = data;
+		this.data = Arrays.copyOf(data, data.length);
 		this.isForKey = isForKey;
 		this.exception = exception;
 	}
@@ -66,7 +67,7 @@ public class FailedDeserializationInfo {
 	}
 
 	public byte[] getData() {
-		return this.data;
+		return Arrays.copyOf(this.data, this.data.length);
 	}
 
 	public boolean isForKey() {
