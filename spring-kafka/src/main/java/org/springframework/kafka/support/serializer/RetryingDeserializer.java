@@ -28,6 +28,8 @@ import org.springframework.util.Assert;
  * A deserialzer configured with a delegate and a {@link RetryOperations} to retry
  * deserialization in case of transient errors.
  *
+ * @param <T> Type to be deserialized into.
+ *
  * @author Gary Russell
  * @since 2.3
  *
