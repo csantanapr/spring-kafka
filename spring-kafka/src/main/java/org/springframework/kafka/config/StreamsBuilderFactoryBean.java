@@ -40,9 +40,9 @@ import org.springframework.util.Assert;
 /**
  * An {@link AbstractFactoryBean} for the {@link StreamsBuilder} instance
  * and lifecycle control for the internal {@link KafkaStreams} instance.
- *
- * <p>A fine grained control on {@link KafkaStreams} can be achieved by
- * {@link KafkaStreamsCustomizer}s</p>
+ * <p>
+ * A fine grained control on {@link KafkaStreams} can be achieved by
+ * {@link KafkaStreamsCustomizer}s.
  *
  * @author Artem Bilan
  * @author Ivan Ursul
@@ -255,7 +255,7 @@ public class StreamsBuilderFactoryBean extends AbstractFactoryBean<StreamsBuilde
 	}
 
 	@Override
-	protected StreamsBuilder createInstance() {
+	protected synchronized StreamsBuilder createInstance() {
 		if (this.autoStartup) {
 			Assert.state(this.streamsConfig != null || this.properties != null,
 					"'streamsConfig' or streams configuration properties must not be null");
@@ -284,7 +284,6 @@ public class StreamsBuilderFactoryBean extends AbstractFactoryBean<StreamsBuilde
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public synchronized void start() {
 		if (!this.running) {
