@@ -468,6 +468,8 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 
 		private final RecordInterceptor<K, V> recordInterceptor = getRecordInterceptor();
 
+		private final ConsumerSeekCallback seekCallback = new InitialOrIdleSeekCallback();
+
 		private Map<TopicPartition, OffsetMetadata> definedPartitions;
 
 		private volatile Collection<TopicPartition> assignedPartitions;
@@ -695,85 +697,12 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 			for (TopicPartition topicPartition : partitions) {
 				current.put(topicPartition, ListenerConsumer.this.consumer.position(topicPartition));
 			}
-			ConsumerSeekCallback callback = new ConsumerSeekCallback() {
-
-				@Override
-				public void seek(String topic, int partition, long offset) {
-					ListenerConsumer.this.consumer.seek(new TopicPartition(topic, partition), offset);
-				}
-
-				@Override
-				public void seekToBeginning(String topic, int partition) {
-					ListenerConsumer.this.consumer.seekToBeginning(
-							Collections.singletonList(new TopicPartition(topic, partition)));
-				}
-
-				@Override
-				public void seekToEnd(String topic, int partition) {
-					ListenerConsumer.this.consumer.seekToEnd(
-							Collections.singletonList(new TopicPartition(topic, partition)));
-				}
-
-				@Override
-				public void seekRelative(String topic, int partition, long offset, boolean toCurrent) {
-					TopicPartition topicPart = new TopicPartition(topic, partition);
-					Long whereTo = null;
-					Consumer<K, V> consumerToSeek = ListenerConsumer.this.consumer;
-					if (offset >= 0) {
-						whereTo = computeForwardWhereTo(offset, toCurrent, topicPart, consumerToSeek);
-					}
-					else {
-						whereTo = computeBackwardWhereTo(offset, toCurrent, topicPart, consumerToSeek);
-					}
-					if (whereTo != null) {
-						consumerToSeek.seek(topicPart, whereTo);
-					}
-				}
-
-				@Nullable
-				private Long computeForwardWhereTo(long offset, boolean toCurrent, TopicPartition topicPart,
-						Consumer<K, V> consumerToSeek) {
-
-					Long start;
-					if (!toCurrent) {
-						Map<TopicPartition, Long> beginning = consumerToSeek
-								.beginningOffsets(Collections.singletonList(topicPart));
-						start = beginning.get(topicPart);
-					}
-					else {
-						start = consumerToSeek.position(topicPart);
-					}
-					if (start != null) {
-						return start + offset;
-					}
-					return null;
-				}
-
-				@Nullable
-				private Long computeBackwardWhereTo(long offset, boolean toCurrent, TopicPartition topicPart,
-						Consumer<K, V> consumerToSeek) {
-
-					Long end;
-					if (!toCurrent) {
-						Map<TopicPartition, Long> endings = consumerToSeek
-								.endOffsets(Collections.singletonList(topicPart));
-						end = endings.get(topicPart);
-					}
-					else {
-						end = consumerToSeek.position(topicPart);
-					}
-					if (end != null) {
-						return end + offset;
-					}
-					return null;
-				}
-
-			};
 			if (idle) {
-				((ConsumerSeekAware) ListenerConsumer.this.genericListener).onIdleContainer(current, callback);
+				((ConsumerSeekAware) ListenerConsumer.this.genericListener).onIdleContainer(current, this.seekCallback);
 			}
 			else {
-				((ConsumerSeekAware) ListenerConsumer.this.genericListener).onPartitionsAssigned(current, callback);
+				((ConsumerSeekAware) ListenerConsumer.this.genericListener).onPartitionsAssigned(current,
+						this.seekCallback);
 			}
 		}
 
@@ -1909,6 +1838,85 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 				else {
 					this.userListener.onPartitionsAssigned(partitions);
 				}
+			}
+
+		}
+
+		private final class InitialOrIdleSeekCallback implements ConsumerSeekCallback {
+
+			InitialOrIdleSeekCallback() {
+				super();
+			}
+
+			@Override
+			public void seek(String topic, int partition, long offset) {
+				ListenerConsumer.this.consumer.seek(new TopicPartition(topic, partition), offset);
+			}
+
+			@Override
+			public void seekToBeginning(String topic, int partition) {
+				ListenerConsumer.this.consumer.seekToBeginning(
+						Collections.singletonList(new TopicPartition(topic, partition)));
+			}
+
+			@Override
+			public void seekToEnd(String topic, int partition) {
+				ListenerConsumer.this.consumer.seekToEnd(
+						Collections.singletonList(new TopicPartition(topic, partition)));
+			}
+
+			@Override
+			public void seekRelative(String topic, int partition, long offset, boolean toCurrent) {
+				TopicPartition topicPart = new TopicPartition(topic, partition);
+				Long whereTo = null;
+				Consumer<K, V> consumerToSeek = ListenerConsumer.this.consumer;
+				if (offset >= 0) {
+					whereTo = computeForwardWhereTo(offset, toCurrent, topicPart, consumerToSeek);
+				}
+				else {
+					whereTo = computeBackwardWhereTo(offset, toCurrent, topicPart, consumerToSeek);
+				}
+				if (whereTo != null) {
+					consumerToSeek.seek(topicPart, whereTo);
+				}
+			}
+
+			@Nullable
+			private Long computeForwardWhereTo(long offset, boolean toCurrent, TopicPartition topicPart,
+					Consumer<K, V> consumerToSeek) {
+
+				Long start;
+				if (!toCurrent) {
+					Map<TopicPartition, Long> beginning = consumerToSeek
+							.beginningOffsets(Collections.singletonList(topicPart));
+					start = beginning.get(topicPart);
+				}
+				else {
+					start = consumerToSeek.position(topicPart);
+				}
+				if (start != null) {
+					return start + offset;
+				}
+				return null;
+			}
+
+			@Nullable
+			private Long computeBackwardWhereTo(long offset, boolean toCurrent, TopicPartition topicPart,
+					Consumer<K, V> consumerToSeek) {
+
+				Long end;
+				if (!toCurrent) {
+					Map<TopicPartition, Long> endings = consumerToSeek
+							.endOffsets(Collections.singletonList(topicPart));
+					end = endings.get(topicPart);
+				}
+				else {
+					end = consumerToSeek.position(topicPart);
+				}
+				if (end != null) {
+					return end + offset;
+				}
+				return null;
 			}
 
 		}
