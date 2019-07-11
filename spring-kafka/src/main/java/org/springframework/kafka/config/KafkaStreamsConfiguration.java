@@ -17,16 +17,16 @@
 package org.springframework.kafka.config;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.Assert;
 
 /**
- * Wrapper for {@link org.apache.kafka.streams.StreamsBuilder} properties.
+ * Wrapper for {@link org.apache.kafka.streams.StreamsBuilder} properties. The framework
+ * looks for a bean of this type with name 'defaultKafkaStreamsConfig' and auto-declares a
+ * {@link StreamsBuilderFactoryBean} using it. The {@link Properties} class is too general
+ * for such activity.
  *
  * @author Gary Russell
  * @since 2.2
@@ -36,32 +36,11 @@ public class KafkaStreamsConfiguration {
 
 	private final Map<String, Object> configs;
 
-	private final DefaultConversionService conversionService = new DefaultConversionService();
-
 	private Properties properties;
 
 	public KafkaStreamsConfiguration(Map<String, Object> configs) {
 		Assert.notNull(configs, "Configuration map cannot be null");
 		this.configs = new HashMap<>(configs);
-		// Not lambdas so we retain type information
-		this.conversionService.addConverter(new Converter<Class<?>, String>() {
-
-			@Override
-			public String convert(Class<?> c) {
-				return c.getName();
-			}
-
-		});
-		this.conversionService.addConverter(new Converter<List<?>, String>() {
-
-			@Override
-			public String convert(List<?> l) {
-				String value = l.toString();
-				// trim [...] - revert to comma-delimited list
-				return value.substring(1, value.length() - 1);
-			}
-
-		});
 	}
 
 	/**
