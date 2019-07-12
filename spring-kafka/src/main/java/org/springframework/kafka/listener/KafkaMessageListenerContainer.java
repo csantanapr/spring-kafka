@@ -694,6 +694,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 		}
 
 		private void seekPartitions(Collection<TopicPartition> partitions, boolean idle) {
+			((ConsumerSeekAware) this.genericListener).registerSeekCallback(this);
 			Map<TopicPartition, Long> current = new HashMap<>();
 			for (TopicPartition topicPartition : partitions) {
 				current.put(topicPartition, ListenerConsumer.this.consumer.position(topicPartition));
@@ -847,9 +848,10 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 			}
 		}
 
-		public void wrapUp() {
+		private void wrapUp() {
 			KafkaUtils.clearConsumerGroupId();
 			publishConsumerStoppingEvent(this.consumer);
+			Collection<TopicPartition> partitions = getAssignedPartitions();
 			if (!this.fatalError) {
 				if (this.kafkaTxManager == null) {
 					commitPendingAcks();
@@ -861,7 +863,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 					}
 				}
 				else {
-					closeProducers(getAssignedPartitions());
+					closeProducers(partitions);
 				}
 			}
 			else {
@@ -876,6 +878,9 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 			getAfterRollbackProcessor().clearThreadState();
 			if (this.errorHandler != null) {
 				this.errorHandler.clearThreadState();
+			}
+			if (ListenerConsumer.this.genericListener instanceof ConsumerSeekAware) {
+				((ConsumerSeekAware) ListenerConsumer.this.genericListener).onPartitionsRevoked(partitions);
 			}
 			this.logger.info(() -> getGroupId() + ": Consumer stopped");
 			publishConsumerStoppedEvent();
@@ -1475,6 +1480,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 					if (position == null) {
 						if (offset.isRelativeToCurrent()) {
 							whereTo += this.consumer.position(offset.getTopicPartition());
+							whereTo = Math.max(whereTo, 0);
 						}
 						this.consumer.seek(offset.getTopicPartition(), whereTo);
 					}
@@ -1483,6 +1489,13 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 						if (whereTo != null) {
 							this.consumer.seek(offset.getTopicPartition(), whereTo);
 						}
+					}
+					else if (position.equals(SeekPosition.TIMESTAMP)) {
+						// possible late addition since the grouped processing above
+						Map<TopicPartition, OffsetAndTimestamp> offsetsForTimes = this.consumer
+								.offsetsForTimes(
+										Collections.singletonMap(offset.getTopicPartition(), offset.getOffset()));
+						offsetsForTimes.forEach((tp, ot) -> this.consumer.seek(tp, ot.offset()));
 					}
 					else {
 						this.consumer.seekToEnd(Collections.singletonList(offset.getTopicPartition()));
@@ -1511,6 +1524,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 					}
 					timestampSeeks.put(tpo.getTopicPartition(), tpo.getOffset());
 					seekIterator.remove();
+					traceSeek(tpo);
 				}
 			}
 			if (timestampSeeks != null) {
@@ -1783,6 +1797,9 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 						this.consumerAwareListener.onPartitionsRevokedAfterCommit(ListenerConsumer.this.consumer,
 								partitions);
 					}
+					if (ListenerConsumer.this.genericListener instanceof ConsumerSeekAware) {
+						((ConsumerSeekAware) ListenerConsumer.this.genericListener).onPartitionsRevoked(partitions);
+					}
 				}
 				finally {
 					if (ListenerConsumer.this.kafkaTxManager != null) {
@@ -1972,7 +1989,8 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 					end = consumerToSeek.position(topicPart);
 				}
 				if (end != null) {
-					return end + offset;
+					long newOffset = end + offset;
+					return newOffset < 0 ? 0 : newOffset;
 				}
 				return null;
 			}

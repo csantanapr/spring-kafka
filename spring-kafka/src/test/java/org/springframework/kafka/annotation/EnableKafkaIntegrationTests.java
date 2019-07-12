@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,6 +78,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.event.ListenerContainerIdleEvent;
+import org.springframework.kafka.listener.AbstractConsumerSeekAware;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ConsumerAwareErrorHandler;
 import org.springframework.kafka.listener.ConsumerAwareListenerErrorHandler;
@@ -152,7 +155,7 @@ public class EnableKafkaIntegrationTests {
 			"annotated22reply", "annotated23", "annotated23reply", "annotated24", "annotated24reply",
 			"annotated25", "annotated25reply1", "annotated25reply2", "annotated26", "annotated27", "annotated28",
 			"annotated29", "annotated30", "annotated30reply", "annotated31", "annotated32", "annotated33",
-			"annotated34", "annotated35", "annotated36", "annotated37", "foo", "manualStart");
+			"annotated34", "annotated35", "annotated36", "annotated37", "foo", "manualStart", "seekOnIdle");
 
 	private static EmbeddedKafkaBroker embeddedKafka = embeddedKafkaRule.getEmbeddedKafka();
 
@@ -200,6 +203,9 @@ public class EnableKafkaIntegrationTests {
 
 	@Autowired
 	private ConcurrentKafkaListenerContainerFactory<Integer, String> transactionalFactory;
+
+	@Autowired
+	private SeekToLastOnIdleListener seekOnIdleListener;
 
 	@Test
 	public void testAnonymous() {
@@ -757,6 +763,24 @@ public class EnableKafkaIntegrationTests {
 		assertThat(this.listener.username).isEqualTo("SomeUsername");
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testSeekToLastOnIdle() throws InterruptedException {
+		this.registry.getListenerContainer("seekOnIdle").start();
+		this.seekOnIdleListener.waitForBalancedAssignment();
+		this.template.send("seekOnIdle", 0, 0, "foo");
+		this.template.send("seekOnIdle", 1, 1, "bar");
+		assertThat(this.seekOnIdleListener.latch1.await(10, TimeUnit.SECONDS)).isTrue();
+		assertThat(this.seekOnIdleListener.latch2.getCount()).isEqualTo(2L);
+		this.seekOnIdleListener.rewindAllOneRecord();
+		assertThat(this.seekOnIdleListener.latch2.await(10, TimeUnit.SECONDS)).isTrue();
+		assertThat(this.seekOnIdleListener.latch3.getCount()).isEqualTo(1L);
+		this.seekOnIdleListener.rewindOnePartitionOneRecord("seekOnIdle", 1);
+		assertThat(this.seekOnIdleListener.latch3.await(10, TimeUnit.SECONDS)).isTrue();
+		this.registry.getListenerContainer("seekOnIdle").stop();
+		assertThat(KafkaTestUtils.getPropertyValue(this.seekOnIdleListener, "callbacks", Map.class)).hasSize(0);
+	}
+
 	@Configuration
 	@EnableKafka
 	@EnableTransactionManagement(proxyTargetClass = true)
@@ -933,6 +957,7 @@ public class EnableKafkaIntegrationTests {
 			factory.setRecordFilterStrategy(recordFilter());
 			// always send to the same partition so the replies are in order for the test
 			factory.setReplyTemplate(partitionZeroReplyingTemplate());
+			factory.setMissingTopicsFatal(false);
 			return factory;
 		}
 
@@ -968,6 +993,7 @@ public class EnableKafkaIntegrationTests {
 			ContainerProperties props = factory.getContainerProperties();
 			props.setAckMode(AckMode.MANUAL_IMMEDIATE);
 			props.setIdleEventInterval(100L);
+			props.setPollTimeout(50L);
 			factory.setRecordFilterStrategy(manualFilter());
 			factory.setAckDiscarded(true);
 			factory.setRetryTemplate(new RetryTemplate());
@@ -1048,6 +1074,11 @@ public class EnableKafkaIntegrationTests {
 		@Bean
 		public Listener listener() {
 			return new Listener();
+		}
+
+		@Bean
+		public SeekToLastOnIdleListener seekOnIdle() {
+			return new SeekToLastOnIdleListener();
 		}
 
 		@Bean
@@ -1694,6 +1725,68 @@ public class EnableKafkaIntegrationTests {
 		@Override
 		public void registerSeekCallback(ConsumerSeekCallback callback) {
 			this.seekCallBack.set(callback);
+		}
+
+	}
+
+	public static class SeekToLastOnIdleListener extends AbstractConsumerSeekAware {
+
+		private final CountDownLatch latch1 = new CountDownLatch(10);
+
+		private final CountDownLatch latch2 = new CountDownLatch(12);
+
+		private final CountDownLatch latch3 = new CountDownLatch(13);
+
+		private final Set<Thread> consumerThreads = ConcurrentHashMap.newKeySet();
+
+		@KafkaListener(id = "seekOnIdle", topics = "seekOnIdle", autoStartup = "false", concurrency = "2",
+				clientIdPrefix = "seekOnIdle", containerFactory = "kafkaManualAckListenerContainerFactory")
+		public void listen(@SuppressWarnings("unused") String in, Acknowledgment ack) {
+			this.latch1.countDown();
+			this.latch2.countDown();
+			this.latch3.countDown();
+			ack.acknowledge();
+		}
+
+		@Override
+		public void onIdleContainer(Map<org.apache.kafka.common.TopicPartition, Long> assignments,
+				ConsumerSeekCallback callback) {
+
+			if (this.latch1.getCount() > 0) {
+				assignments.keySet().forEach(tp -> callback.seekRelative(tp.topic(), tp.partition(), -1, true));
+			}
+		}
+
+		public void rewindAllOneRecord() {
+			getSeekCallbacks()
+				.forEach((tp, callback) ->
+					callback.seekRelative(tp.topic(), tp.partition(), -1, true));
+		}
+
+		public void rewindOnePartitionOneRecord(String topic, int partition) {
+			getSeekCallbackFor(new org.apache.kafka.common.TopicPartition(topic, partition))
+				.seekRelative(topic, partition, -1, true);
+		}
+
+		@Override
+		public synchronized void onPartitionsAssigned(Map<org.apache.kafka.common.TopicPartition, Long> assignments,
+				ConsumerSeekCallback callback) {
+
+			super.onPartitionsAssigned(assignments, callback);
+			if (assignments.size() > 0) {
+				this.consumerThreads.add(Thread.currentThread());
+				notifyAll();
+			}
+		}
+
+		public synchronized void waitForBalancedAssignment() throws InterruptedException {
+			int n = 0;
+			while (this.consumerThreads.size() < 2) {
+				wait(1000);
+				if (n++ > 20) {
+					throw new IllegalStateException("Balanced distribution did not occur");
+				}
+			}
 		}
 
 	}
