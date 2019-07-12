@@ -1465,23 +1465,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 		}
 
 		private void processSeeks() {
-			Iterator<TopicPartitionOffset> seekIterator = this.seeks.iterator();
-			Map<TopicPartition, Long> timestampSeeks = null;
-			while (seekIterator.hasNext()) {
-				TopicPartitionOffset tpo = seekIterator.next();
-				if (SeekPosition.TIMESTAMP.equals(tpo.getPosition())) {
-					if (timestampSeeks == null) {
-						timestampSeeks = new HashMap<>();
-					}
-					timestampSeeks.put(tpo.getTopicPartition(), tpo.getOffset());
-					seekIterator.remove();
-				}
-			}
-			if (timestampSeeks != null) {
-				Map<TopicPartition, OffsetAndTimestamp> offsetsForTimes = this.consumer
-						.offsetsForTimes(timestampSeeks);
-				offsetsForTimes.forEach((tp, ot) -> this.consumer.seek(tp, ot.offset()));
-			}
+			processTimestampSeeks();
 			TopicPartitionOffset offset = this.seeks.poll();
 			while (offset != null) {
 				traceSeek(offset);
@@ -1513,6 +1497,26 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 					this.logger.error(e, () -> "Exception while seeking " + offsetToLog);
 				}
 				offset = this.seeks.poll();
+			}
+		}
+
+		private void processTimestampSeeks() {
+			Iterator<TopicPartitionOffset> seekIterator = this.seeks.iterator();
+			Map<TopicPartition, Long> timestampSeeks = null;
+			while (seekIterator.hasNext()) {
+				TopicPartitionOffset tpo = seekIterator.next();
+				if (SeekPosition.TIMESTAMP.equals(tpo.getPosition())) {
+					if (timestampSeeks == null) {
+						timestampSeeks = new HashMap<>();
+					}
+					timestampSeeks.put(tpo.getTopicPartition(), tpo.getOffset());
+					seekIterator.remove();
+				}
+			}
+			if (timestampSeeks != null) {
+				Map<TopicPartition, OffsetAndTimestamp> offsetsForTimes = this.consumer
+						.offsetsForTimes(timestampSeeks);
+				offsetsForTimes.forEach((tp, ot) -> this.consumer.seek(tp, ot.offset()));
 			}
 		}
 
