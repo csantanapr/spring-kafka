@@ -58,8 +58,8 @@ class KafkaListenerEndpointAdapter implements KafkaListenerEndpoint {
 	}
 
 	@Override
-	public Collection<TopicPartitionOffset> getTopicPartitions() {
-		return Collections.emptyList();
+	public TopicPartitionOffset[] getTopicPartitionsToAssign() {
+		return new TopicPartitionOffset[0];
 	}
 
 	@Override

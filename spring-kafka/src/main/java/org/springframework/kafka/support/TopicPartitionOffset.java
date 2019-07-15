@@ -65,6 +65,7 @@ public class TopicPartitionOffset {
 		 * Seek to the time stamp.
 		 */
 		TIMESTAMP
+
 	}
 
 	private final TopicPartition topicPartition;

@@ -59,27 +59,28 @@ public class ConcurrentKafkaListenerContainerFactory<K, V>
 
 	@Override
 	protected ConcurrentMessageListenerContainer<K, V> createContainerInstance(KafkaListenerEndpoint endpoint) {
-		Collection<TopicPartitionOffset> topicPartitions = endpoint.getTopicPartitions();
-		if (!topicPartitions.isEmpty()) {
-			ContainerProperties properties = new ContainerProperties(
-					topicPartitions.toArray(new TopicPartitionOffset[0]));
-			return new ConcurrentMessageListenerContainer<K, V>(getConsumerFactory(), properties);
+		TopicPartitionOffset[] topicPartitions = endpoint.getTopicPartitionsToAssign();
+		if (topicPartitions != null && topicPartitions.length > 0) {
+			ContainerProperties properties = new ContainerProperties(topicPartitions);
+			return new ConcurrentMessageListenerContainer<>(getConsumerFactory(), properties);
 		}
 		else {
 			Collection<String> topics = endpoint.getTopics();
 			if (!topics.isEmpty()) {
 				ContainerProperties properties = new ContainerProperties(topics.toArray(new String[0]));
-				return new ConcurrentMessageListenerContainer<K, V>(getConsumerFactory(), properties);
+				return new ConcurrentMessageListenerContainer<>(getConsumerFactory(), properties);
 			}
 			else {
 				ContainerProperties properties = new ContainerProperties(endpoint.getTopicPattern());
-				return new ConcurrentMessageListenerContainer<K, V>(getConsumerFactory(), properties);
+				return new ConcurrentMessageListenerContainer<>(getConsumerFactory(), properties);
 			}
 		}
 	}
 
 	@Override
-	protected void initializeContainer(ConcurrentMessageListenerContainer<K, V> instance, KafkaListenerEndpoint endpoint) {
+	protected void initializeContainer(ConcurrentMessageListenerContainer<K, V> instance,
+			KafkaListenerEndpoint endpoint) {
+
 		super.initializeContainer(instance, endpoint);
 		if (endpoint.getConcurrency() != null) {
 			instance.setConcurrency(endpoint.getConcurrency());

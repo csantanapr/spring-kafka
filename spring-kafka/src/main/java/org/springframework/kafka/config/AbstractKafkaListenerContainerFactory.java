@@ -217,10 +217,10 @@ public abstract class AbstractKafkaListenerContainerFactory<C extends AbstractMe
 	public void setReplyTemplate(KafkaTemplate<?, ?> replyTemplate) {
 		if (replyTemplate instanceof ReplyingKafkaOperations) {
 			this.logger.warn(
-				"The 'replyTemplate' should not be an implementation of 'ReplyingKafkaOperations'; "
-				+ "such implementations are for client-side request/reply operations; here we "
-				+ "are simply sending a reply to an incoming request so the reply container will "
-				+ "never be used and will consume unnecessary resources.");
+					"The 'replyTemplate' should not be an implementation of 'ReplyingKafkaOperations'; "
+							+ "such implementations are for client-side request/reply operations; here we "
+							+ "are simply sending a reply to an incoming request so the reply container will "
+							+ "never be used and will consume unnecessary resources.");
 		}
 		this.replyTemplate = replyTemplate;
 	}
@@ -314,7 +314,7 @@ public abstract class AbstractKafkaListenerContainerFactory<C extends AbstractMe
 	public C createListenerContainer(KafkaListenerEndpoint endpoint) {
 		C instance = createContainerInstance(endpoint);
 		JavaUtils.INSTANCE
-			.acceptIfNotNull(endpoint.getId(), instance::setBeanName);
+				.acceptIfNotNull(endpoint.getId(), instance::setBeanName);
 		if (endpoint instanceof AbstractKafkaListenerEndpoint) {
 			configureEndpoint((AbstractKafkaListenerEndpoint<K, V>) endpoint);
 		}
@@ -327,14 +327,14 @@ public abstract class AbstractKafkaListenerContainerFactory<C extends AbstractMe
 
 	private void configureEndpoint(AbstractKafkaListenerEndpoint<K, V> aklEndpoint) {
 		JavaUtils.INSTANCE
-			.acceptIfNotNull(this.recordFilterStrategy, aklEndpoint::setRecordFilterStrategy)
-			.acceptIfNotNull(this.ackDiscarded, aklEndpoint::setAckDiscarded)
-			.acceptIfNotNull(this.retryTemplate, aklEndpoint::setRetryTemplate)
-			.acceptIfNotNull(this.recoveryCallback, aklEndpoint::setRecoveryCallback)
-			.acceptIfNotNull(this.statefulRetry, aklEndpoint::setStatefulRetry)
-			.acceptIfNotNull(this.batchListener, aklEndpoint::setBatchListener)
-			.acceptIfNotNull(this.replyTemplate, aklEndpoint::setReplyTemplate)
-			.acceptIfNotNull(this.replyHeadersConfigurer, aklEndpoint::setReplyHeadersConfigurer);
+				.acceptIfNotNull(this.recordFilterStrategy, aklEndpoint::setRecordFilterStrategy)
+				.acceptIfNotNull(this.ackDiscarded, aklEndpoint::setAckDiscarded)
+				.acceptIfNotNull(this.retryTemplate, aklEndpoint::setRetryTemplate)
+				.acceptIfNotNull(this.recoveryCallback, aklEndpoint::setRecoveryCallback)
+				.acceptIfNotNull(this.statefulRetry, aklEndpoint::setStatefulRetry)
+				.acceptIfNotNull(this.batchListener, aklEndpoint::setBatchListener)
+				.acceptIfNotNull(this.replyTemplate, aklEndpoint::setReplyTemplate)
+				.acceptIfNotNull(this.replyHeadersConfigurer, aklEndpoint::setReplyHeadersConfigurer);
 	}
 
 	/**
@@ -356,13 +356,13 @@ public abstract class AbstractKafkaListenerContainerFactory<C extends AbstractMe
 		BeanUtils.copyProperties(this.containerProperties, properties, "topics", "topicPartitions", "topicPattern",
 				"messageListener", "ackCount", "ackTime");
 		JavaUtils.INSTANCE
-			.acceptIfNotNull(this.afterRollbackProcessor, instance::setAfterRollbackProcessor)
-			.acceptIfCondition(this.containerProperties.getAckCount() > 0, this.containerProperties.getAckCount(),
-					properties::setAckCount)
-			.acceptIfCondition(this.containerProperties.getAckTime() > 0, this.containerProperties.getAckTime(),
-					properties::setAckTime)
-			.acceptIfNotNull(this.errorHandler, instance::setGenericErrorHandler)
-			.acceptIfNotNull(this.missingTopicsFatal, instance.getContainerProperties()::setMissingTopicsFatal);
+				.acceptIfNotNull(this.afterRollbackProcessor, instance::setAfterRollbackProcessor)
+				.acceptIfCondition(this.containerProperties.getAckCount() > 0, this.containerProperties.getAckCount(),
+						properties::setAckCount)
+				.acceptIfCondition(this.containerProperties.getAckTime() > 0, this.containerProperties.getAckTime(),
+						properties::setAckTime)
+				.acceptIfNotNull(this.errorHandler, instance::setGenericErrorHandler)
+				.acceptIfNotNull(this.missingTopicsFatal, instance.getContainerProperties()::setMissingTopicsFatal);
 		if (endpoint.getAutoStartup() != null) {
 			instance.setAutoStartup(endpoint.getAutoStartup());
 		}
@@ -371,54 +371,66 @@ public abstract class AbstractKafkaListenerContainerFactory<C extends AbstractMe
 		}
 		instance.setRecordInterceptor(this.recordInterceptor);
 		JavaUtils.INSTANCE
-			.acceptIfNotNull(this.phase, instance::setPhase)
-			.acceptIfNotNull(this.applicationEventPublisher, instance::setApplicationEventPublisher)
-			.acceptIfNotNull(endpoint.getGroupId(), instance.getContainerProperties()::setGroupId)
-			.acceptIfNotNull(endpoint.getClientIdPrefix(), instance.getContainerProperties()::setClientId)
+				.acceptIfNotNull(this.phase, instance::setPhase)
+				.acceptIfNotNull(this.applicationEventPublisher, instance::setApplicationEventPublisher)
+				.acceptIfNotNull(endpoint.getGroupId(), instance.getContainerProperties()::setGroupId)
+				.acceptIfNotNull(endpoint.getClientIdPrefix(), instance.getContainerProperties()::setClientId)
 				.acceptIfNotNull(endpoint.getConsumerProperties(),
 						instance.getContainerProperties()::setConsumerProperties);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @deprecated in favor of {@link #createContainer(TopicPartitionOffset[])}
+	 */
+	@Deprecated
 	@Override
-	public C createContainer(final Collection<TopicPartitionOffset> topicPartitions) {
+	public C createContainer(Collection<org.springframework.kafka.support.TopicPartitionInitialOffset> topicPartitions) {
+		return createContainer(topicPartitions.stream()
+				.map(org.springframework.kafka.support.TopicPartitionInitialOffset::toTPO)
+				.toArray(TopicPartitionOffset[]::new));
+	}
+
+	@Override
+	public C createContainer(TopicPartitionOffset... topicsAndPartitions) {
 		KafkaListenerEndpoint endpoint = new KafkaListenerEndpointAdapter() {
 
-					@Override
-					public Collection<TopicPartitionOffset> getTopicPartitions() {
-						return topicPartitions;
-					}
+			@Override
+			public TopicPartitionOffset[] getTopicPartitionsToAssign() {
+				return Arrays.copyOf(topicsAndPartitions, topicsAndPartitions.length);
+			}
 
-				};
+		};
 		C container = createContainerInstance(endpoint);
 		initializeContainer(container, endpoint);
 		return container;
 	}
 
 	@Override
-	public C createContainer(final String... topics) {
+	public C createContainer(String... topics) {
 		KafkaListenerEndpoint endpoint = new KafkaListenerEndpointAdapter() {
 
-					@Override
-					public Collection<String> getTopics() {
-						return Arrays.asList(topics);
-					}
+			@Override
+			public Collection<String> getTopics() {
+				return Arrays.asList(topics);
+			}
 
-				};
+		};
 		C container = createContainerInstance(endpoint);
 		initializeContainer(container, endpoint);
 		return container;
 	}
 
 	@Override
-	public C createContainer(final Pattern topicPattern) {
+	public C createContainer(Pattern topicPattern) {
 		KafkaListenerEndpoint endpoint = new KafkaListenerEndpointAdapter() {
 
-					@Override
-					public Pattern getTopicPattern() {
-						return topicPattern;
-					}
+			@Override
+			public Pattern getTopicPattern() {
+				return topicPattern;
+			}
 
-				};
+		};
 		C container = createContainerInstance(endpoint);
 		initializeContainer(container, endpoint);
 		return container;
