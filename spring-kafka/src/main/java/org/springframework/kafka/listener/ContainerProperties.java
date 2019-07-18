@@ -462,14 +462,20 @@ public class ContainerProperties {
 	 * @return the topics/partitions.
 	 */
 	@Deprecated
+	@Nullable
 	public org.springframework.kafka.support.TopicPartitionInitialOffset[] getTopicPartitions() {
-		return Arrays.stream(this.topicPartitionsToAssign)
+		return this.topicPartitionsToAssign != null
+				? Arrays.stream(this.topicPartitionsToAssign)
 				.map(org.springframework.kafka.support.TopicPartitionInitialOffset::fromTPO)
-				.toArray(org.springframework.kafka.support.TopicPartitionInitialOffset[]::new);
+				.toArray(org.springframework.kafka.support.TopicPartitionInitialOffset[]::new)
+				: null;
 	}
 
+	@Nullable
 	public TopicPartitionOffset[] getTopicPartitionsToAssign() {
-		return this.topicPartitionsToAssign;
+		return this.topicPartitionsToAssign != null
+				? Arrays.copyOf(this.topicPartitionsToAssign, this.topicPartitionsToAssign.length)
+				: null;
 	}
 
 	public AckMode getAckMode() {
@@ -707,12 +713,12 @@ public class ContainerProperties {
 				+ ", messageListener=" + this.messageListener
 				+ ", pollTimeout=" + this.pollTimeout
 				+ (this.consumerTaskExecutor != null
-						? ", consumerTaskExecutor=" + this.consumerTaskExecutor
-						: "")
+				? ", consumerTaskExecutor=" + this.consumerTaskExecutor
+				: "")
 				+ ", shutdownTimeout=" + this.shutdownTimeout
 				+ (this.consumerRebalanceListener != null
-						? ", consumerRebalanceListener=" + this.consumerRebalanceListener
-						: "")
+				? ", consumerRebalanceListener=" + this.consumerRebalanceListener
+				: "")
 				+ (this.commitCallback != null ? ", commitCallback=" + this.commitCallback : "")
 				+ ", syncCommits=" + this.syncCommits
 				+ (this.syncCommitTimeout != null ? ", syncCommitTimeout=" + this.syncCommitTimeout : "")
@@ -721,8 +727,8 @@ public class ContainerProperties {
 				+ (this.idleEventInterval == null ? "not enabled" : this.idleEventInterval)
 				+ (this.groupId != null ? ", groupId=" + this.groupId : "")
 				+ (this.transactionManager != null
-						? ", transactionManager=" + this.transactionManager
-						: "")
+				? ", transactionManager=" + this.transactionManager
+				: "")
 				+ ", monitorInterval=" + this.monitorInterval
 				+ (this.scheduler != null ? ", scheduler=" + this.scheduler : "")
 				+ ", noPollThreshold=" + this.noPollThreshold
@@ -734,8 +740,8 @@ public class ContainerProperties {
 		return (this.topics != null ? "topics=" + Arrays.toString(this.topics) : "")
 				+ (this.topicPattern != null ? ", topicPattern=" + this.topicPattern : "")
 				+ (this.topicPartitionsToAssign != null
-						? ", topicPartitions=" + Arrays.toString(this.topicPartitionsToAssign)
-						: "");
+				? ", topicPartitions=" + Arrays.toString(this.topicPartitionsToAssign)
+				: "");
 	}
 
 }
