@@ -44,6 +44,7 @@ import org.springframework.kafka.listener.BatchMessageListener;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.GenericMessageListenerContainer;
 import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.kafka.support.TopicPartitionOffset;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.util.Assert;
@@ -56,6 +57,8 @@ import org.springframework.util.Assert;
  * @param <R> the reply data type.
  *
  * @author Gary Russell
+ * @author Artem Bilan
+ *
  * @since 2.1.3
  *
  */
@@ -109,13 +112,16 @@ public class ReplyingKafkaTemplate<K, V, R> extends KafkaTemplate<K, V> implemen
 		ContainerProperties properties = this.replyContainer.getContainerProperties();
 		String tempReplyTopic = null;
 		byte[] tempReplyPartition = null;
+		TopicPartitionOffset[] topicPartitionsToAssign = properties.getTopicPartitionsToAssign();
 		if (properties.getTopics() != null && properties.getTopics().length == 1) {
 			tempReplyTopic = properties.getTopics()[0];
 		}
-		else if (properties.getTopicPartitionsToAssign() != null && properties.getTopicPartitionsToAssign().length == 1) {
-			tempReplyTopic = properties.getTopicPartitionsToAssign()[0].getTopic();
+		else if (topicPartitionsToAssign != null && topicPartitionsToAssign.length == 1) {
+			TopicPartitionOffset topicPartitionOffset = topicPartitionsToAssign[0];
+			Assert.notNull(topicPartitionOffset, "'topicPartitionsToAssign' must not be null");
+			tempReplyTopic = topicPartitionOffset.getTopic();
 			ByteBuffer buffer = ByteBuffer.allocate(4); // NOSONAR magic #
-			buffer.putInt(properties.getTopicPartitionsToAssign()[0].getPartition());
+			buffer.putInt(topicPartitionOffset.getPartition());
 			tempReplyPartition = buffer.array();
 		}
 		if (tempReplyTopic == null) {
