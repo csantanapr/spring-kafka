@@ -19,6 +19,7 @@ package org.springframework.kafka.support;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -64,10 +65,11 @@ public class DefaultKafkaHeaderMapperTests {
 				.setHeader(MessageHeaders.CONTENT_TYPE, utf8Text)
 				.setHeader("simpleContentType", MimeTypeUtils.TEXT_PLAIN_VALUE)
 				.setHeader("customToString", new Bar("fiz"))
+				.setHeader("uri", URI.create("https://foo.bar"))
 				.build();
 		RecordHeaders recordHeaders = new RecordHeaders();
 		mapper.fromHeaders(message.getHeaders(), recordHeaders);
-		assertThat(recordHeaders.toArray().length).isEqualTo(9); // 8 + json_types
+		assertThat(recordHeaders.toArray().length).isEqualTo(10); // 9 + json_types
 		Map<String, Object> headers = new HashMap<>();
 		mapper.toHeaders(recordHeaders, headers);
 		assertThat(headers.get("foo")).isInstanceOf(byte[].class);
@@ -80,10 +82,11 @@ public class DefaultKafkaHeaderMapperTests {
 		assertThat(headers.get(MessageHeaders.REPLY_CHANNEL)).isNull();
 		assertThat(headers.get(MessageHeaders.ERROR_CHANNEL)).isEqualTo("errors");
 		assertThat(headers.get("customToString")).isEqualTo("Bar [field=fiz]");
+		assertThat(headers.get("uri")).isEqualTo(URI.create("https://foo.bar"));
 		NonTrustedHeaderType ntht = (NonTrustedHeaderType) headers.get("fix");
 		assertThat(ntht.getHeaderValue()).isNotNull();
 		assertThat(ntht.getUntrustedType()).isEqualTo(Foo.class.getName());
-		assertThat(headers).hasSize(8);
+		assertThat(headers).hasSize(9);
 
 		mapper.addTrustedPackages(getClass().getPackage().getName());
 		headers = new HashMap<>();
@@ -92,7 +95,7 @@ public class DefaultKafkaHeaderMapperTests {
 		assertThat(new String((byte[]) headers.get("foo"))).isEqualTo("bar");
 		assertThat(headers.get("baz")).isEqualTo("qux");
 		assertThat(headers.get("fix")).isEqualTo(new Foo());
-		assertThat(headers).hasSize(8);
+		assertThat(headers).hasSize(9);
 	}
 
 	@Test
