@@ -246,14 +246,8 @@ public class ReplyingKafkaTemplate<K, V, R> extends KafkaTemplate<K, V> implemen
 		Assert.state(this.running, "Template has not been start()ed"); // NOSONAR (sync)
 		CorrelationKey correlationId = this.correlationStrategy.apply(record);
 		Assert.notNull(correlationId, "the created 'correlationId' cannot be null");
-		boolean hasReplyTopic = false;
 		Headers headers = record.headers();
-		Iterator<Header> iterator = headers.iterator();
-		while (iterator.hasNext() && !hasReplyTopic) {
-			if (iterator.next().key().equals(KafkaHeaders.REPLY_TOPIC)) {
-				hasReplyTopic = true;
-			}
-		}
+		boolean hasReplyTopic = headers.lastHeader(KafkaHeaders.REPLY_TOPIC) != null;
 		if (!hasReplyTopic && this.replyTopic != null) {
 			headers.add(new RecordHeader(KafkaHeaders.REPLY_TOPIC, this.replyTopic));
 			if (this.replyPartition != null) {
