@@ -42,6 +42,7 @@ import org.springframework.util.ObjectUtils;
  * enabling debug logging for a test case.
  *
  * @author Artem Bilan
+ * @author Gary Russell
  *
  * @since 2.2
  *
@@ -57,7 +58,7 @@ public final class Log4j2LevelAdjuster implements MethodRule {
 	private final String[] categories;
 
 	private Log4j2LevelAdjuster(Level level) {
-		this(level, null, new String[] { "org.springframework.integration" });
+		this(level, null, new String[] { "org.springframework.kafka" });
 	}
 
 	private Log4j2LevelAdjuster(Level level, Class<?>[] classes, String[] categories) {
@@ -83,11 +84,11 @@ public final class Log4j2LevelAdjuster implements MethodRule {
 	 * Specify the classes for logging level adjusting configured before.
 	 * A new copy Log4j2LevelAdjuster instance is produced by this method.
 	 * The provided classes parameter overrides existing value in the {@link #classes}.
-	 * @param classes the classes to use for logging level adjusting
+	 * @param classesToAdjust the classes to use for logging level adjusting
 	 * @return a Log4j2LevelAdjuster copy with the provided classes
 	 */
-	public Log4j2LevelAdjuster classes(Class<?>... classes) {
-		return classes(false, classes);
+	public Log4j2LevelAdjuster classes(Class<?>... classesToAdjust) {
+		return classes(false, classesToAdjust);
 	}
 
 	/**
@@ -95,13 +96,15 @@ public final class Log4j2LevelAdjuster implements MethodRule {
 	 * A new copy Log4j2LevelAdjuster instance is produced by this method.
 	 * The provided classes parameter can be merged with existing value in the {@link #classes}.
 	 * @param merge to merge or not with previously configured {@link #classes}
-	 * @param classes the classes to use for logging level adjusting
+	 * @param classesToAdjust the classes to use for logging level adjusting
 	 * @return a Log4j2LevelAdjuster copy with the provided classes
 	 * @since 5.0.2
 	 */
-	public Log4j2LevelAdjuster classes(boolean merge, Class<?>... classes) {
+	public Log4j2LevelAdjuster classes(boolean merge, Class<?>... classesToAdjust) {
 		return new Log4j2LevelAdjuster(this.level,
-				merge ? Stream.of(this.classes, classes).flatMap(Stream::of).toArray(Class<?>[]::new) : classes,
+				merge
+						? Stream.of(this.classes, classesToAdjust).flatMap(Stream::of).toArray(Class<?>[]::new)
+						: classesToAdjust,
 				this.categories);
 	}
 
@@ -109,11 +112,11 @@ public final class Log4j2LevelAdjuster implements MethodRule {
 	 * Specify the categories for logging level adjusting configured before.
 	 * A new copy Log4j2LevelAdjuster instance is produced by this method.
 	 * The provided categories parameter overrides existing value in the {@link #categories}.
-	 * @param categories the categories to use for logging level adjusting
+	 * @param categoriesToAdjust the categories to use for logging level adjusting
 	 * @return a Log4j2LevelAdjuster copy with the provided categories
 	 */
-	public Log4j2LevelAdjuster categories(String... categories) {
-		return categories(false, categories);
+	public Log4j2LevelAdjuster categories(String... categoriesToAdjust) {
+		return categories(false, categoriesToAdjust);
 	}
 
 	/**
@@ -121,13 +124,15 @@ public final class Log4j2LevelAdjuster implements MethodRule {
 	 * A new copy Log4j2LevelAdjuster instance is produced by this method.
 	 * The provided categories parameter can be merged with existing value in the {@link #categories}.
 	 * @param merge to merge or not with previously configured {@link #categories}
-	 * @param categories the categories to use for logging level adjusting
+	 * @param categoriesToAdjust the categories to use for logging level adjusting
 	 * @return a Log4j2LevelAdjuster copy with the provided categories
 	 * @since 5.0.2
 	 */
-	public Log4j2LevelAdjuster categories(boolean merge, String... categories) {
+	public Log4j2LevelAdjuster categories(boolean merge, String... categoriesToAdjust) {
 		return new Log4j2LevelAdjuster(this.level, this.classes,
-				merge ? Stream.of(this.categories, categories).flatMap(Stream::of).toArray(String[]::new) : categories);
+				merge
+						? Stream.of(this.categories, categoriesToAdjust).flatMap(Stream::of).toArray(String[]::new)
+						: categoriesToAdjust);
 	}
 
 	/**
