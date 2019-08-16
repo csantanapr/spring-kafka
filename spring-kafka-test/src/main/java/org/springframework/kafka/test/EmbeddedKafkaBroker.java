@@ -228,9 +228,7 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 			brokerConfigProperties.setProperty(KafkaConfig.OffsetsTopicReplicationFactorProp(), "1");
 			brokerConfigProperties.setProperty(KafkaConfig.ReplicaHighWatermarkCheckpointIntervalMsProp(),
 					String.valueOf(Long.MAX_VALUE));
-			if (this.brokerProperties != null) {
-				this.brokerProperties.forEach(brokerConfigProperties::put);
-			}
+			this.brokerProperties.forEach(brokerConfigProperties::put);
 			if (!this.brokerProperties.containsKey(KafkaConfig.NumPartitionsProp())) {
 				brokerConfigProperties.setProperty(KafkaConfig.NumPartitionsProp(), "" + this.partitionsPerTopic);
 			}
