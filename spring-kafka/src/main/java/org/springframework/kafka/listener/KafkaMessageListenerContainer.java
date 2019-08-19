@@ -32,6 +32,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -501,6 +502,8 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 
 		private final ConsumerSeekCallback seekCallback = new InitialOrIdleSeekCallback();
 
+		private final long maxPollInterval;
+
 		private Map<TopicPartition, OffsetMetadata> definedPartitions;
 
 		private volatile Collection<TopicPartition> assignedPartitions;
@@ -593,6 +596,35 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 			if (this.containerProperties.getSyncCommitTimeout() == null) {
 				// update the property so we can use it directly from code elsewhere
 				this.containerProperties.setSyncCommitTimeout(this.syncCommitTimeout);
+			}
+			this.maxPollInterval = obtainMaxPollInterval(consumerProperties);
+		}
+
+		private long obtainMaxPollInterval(Properties consumerProperties) {
+			Object timeout = consumerProperties.get(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG);
+			if (timeout == null) {
+				timeout = KafkaMessageListenerContainer.this.consumerFactory.getConfigurationProperties()
+						.get(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG);
+			}
+
+			if (timeout instanceof Duration) {
+				return ((Duration) timeout).toMillis();
+			}
+			else if (timeout instanceof Number) {
+				return ((Number) timeout).longValue();
+			}
+			else if (timeout instanceof String) {
+				return Long.parseLong((String) timeout);
+			}
+			else {
+				if (timeout != null) {
+					Object timeoutToLog = timeout;
+					this.logger.warn(() -> "Unexpected type: " + timeoutToLog.getClass().getName()
+							+ " in property '"
+							+ ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG
+							+ "'; defaulting to 30 seconds.");
+				}
+				return Duration.ofSeconds(SIXTY / 2).toMillis(); // Default 'max.poll.interval.ms' is 30 seconds
 			}
 		}
 
@@ -774,6 +806,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 			while (isRunning()) {
 				try {
 					pollAndInvoke();
+					idleBetweenPollIfNecessary();
 				}
 				catch (@SuppressWarnings(UNUSED) WakeupException e) {
 					// Ignore, we're stopping or applying immediate foreign acks
@@ -818,8 +851,8 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 				processSeeks();
 			}
 			checkPaused();
-			ConsumerRecords<K, V> records = this.consumer.poll(this.pollTimeout);
 			this.lastPoll = System.currentTimeMillis();
+			ConsumerRecords<K, V> records = this.consumer.poll(this.pollTimeout);
 			checkResumed();
 			debugRecords(records);
 			if (records != null && records.count() > 0) {
@@ -878,6 +911,24 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 						if (partitions != null) {
 							seekPartitions(partitions, true);
 						}
+					}
+				}
+			}
+		}
+
+		private void idleBetweenPollIfNecessary() {
+			long idleBetweenPolls = this.containerProperties.getIdleBetweenPolls();
+			if (idleBetweenPolls > 0) {
+				idleBetweenPolls = Math.min(idleBetweenPolls,
+						this.maxPollInterval - (System.currentTimeMillis() - this.lastPoll)
+								- 5000); // NOSONAR - less by five seconds to avoid race condition with rebalance
+				if (idleBetweenPolls > 0) {
+					try {
+						TimeUnit.MILLISECONDS.sleep(idleBetweenPolls);
+					}
+					catch (InterruptedException ex) {
+						Thread.currentThread().interrupt();
+						throw new IllegalStateException("Consumer Thread [" + this + "] has been interrupted", ex);
 					}
 				}
 			}
