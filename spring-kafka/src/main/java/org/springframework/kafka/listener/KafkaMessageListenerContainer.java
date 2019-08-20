@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -716,11 +717,12 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 		private void subscribeOrAssignTopics(final Consumer<? super K, ? super V> subscribingConsumer) {
 			if (KafkaMessageListenerContainer.this.topicPartitions == null) {
 				ConsumerRebalanceListener rebalanceListener = new ListenerConsumerRebalanceListener();
-				if (this.containerProperties.getTopicPattern() != null) {
-					subscribingConsumer.subscribe(this.containerProperties.getTopicPattern(), rebalanceListener);
+				Pattern topicPattern = this.containerProperties.getTopicPattern();
+				if (topicPattern != null) {
+					subscribingConsumer.subscribe(topicPattern, rebalanceListener);
 				}
 				else {
-					subscribingConsumer.subscribe(Arrays.asList(this.containerProperties.getTopics()),
+					subscribingConsumer.subscribe(Arrays.asList(this.containerProperties.getTopics()), // NOSONAR
 							rebalanceListener);
 				}
 			}

@@ -304,8 +304,8 @@ public class ContainerProperties extends ConsumerProperties {
 	 * @see #setSyncCommits(boolean)
 	 */
 	@Override
-	public void setSyncCommitTimeout(@Nullable Duration syncCommitTimeout) {
-		super.setSyncCommitTimeout(syncCommitTimeout); // NOSONAR - not useless; enhanced javadoc
+	public void setSyncCommitTimeout(@Nullable Duration syncCommitTimeout) { // NOSONAR - not useless; enhanced javadoc
+		super.setSyncCommitTimeout(syncCommitTimeout);
 	}
 
 	/**

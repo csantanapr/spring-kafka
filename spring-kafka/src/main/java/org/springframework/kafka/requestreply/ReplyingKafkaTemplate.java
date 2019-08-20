@@ -118,8 +118,9 @@ public class ReplyingKafkaTemplate<K, V, R> extends KafkaTemplate<K, V> implemen
 		String tempReplyTopic = null;
 		byte[] tempReplyPartition = null;
 		TopicPartitionOffset[] topicPartitionsToAssign = properties.getTopicPartitionsToAssign();
-		if (properties.getTopics() != null && properties.getTopics().length == 1) {
-			tempReplyTopic = properties.getTopics()[0];
+		String[] topics = properties.getTopics();
+		if (topics != null && topics.length == 1) {
+			tempReplyTopic = topics[0];
 		}
 		else if (topicPartitionsToAssign != null && topicPartitionsToAssign.length == 1) {
 			TopicPartitionOffset topicPartitionOffset = topicPartitionsToAssign[0];
