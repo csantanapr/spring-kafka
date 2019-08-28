@@ -1196,8 +1196,8 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 			return null;
 		}
 
-		private void invokeBatchOnMessage(final ConsumerRecords<K, V> records, List<ConsumerRecord<K, V>> recordList,
-				@SuppressWarnings(RAW_TYPES) Producer producer) throws InterruptedException {
+		private void invokeBatchOnMessage(final ConsumerRecords<K, V> records, // NOSONAR - Cyclomatic Complexity
+				List<ConsumerRecord<K, V>> recordList, @SuppressWarnings(RAW_TYPES) Producer producer) throws InterruptedException {
 
 			if (this.wantsFullRecords) {
 				this.batchListener.onMessage(records,
@@ -1211,16 +1211,14 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 			}
 			List<ConsumerRecord<?, ?>> toSeek = null;
 			if (this.nackSleep >= 0) {
-				Iterator<ConsumerRecord<K, V>> iterator = records.iterator();
 				int index = 0;
 				toSeek = new ArrayList<>();
-				while (iterator.hasNext()) {
-					ConsumerRecord<K, V> next = iterator.next();
+				for (ConsumerRecord<K, V> record : records) {
 					if (index++ >= this.nackIndex) {
-						toSeek.add(next);
+						toSeek.add(record);
 					}
 					else {
-						this.acks.put(next);
+						this.acks.put(record);
 					}
 				}
 			}
@@ -1232,7 +1230,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 					sendOffsetsToTransaction(producer);
 				}
 			}
-			if (this.nackSleep >= 0) {
+			if (toSeek != null) {
 				if (!this.autoCommit) {
 					processCommits();
 				}
