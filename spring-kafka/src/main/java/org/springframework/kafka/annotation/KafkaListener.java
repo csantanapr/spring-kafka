@@ -113,6 +113,7 @@ public @interface KafkaListener {
 	 * The topics for this listener.
 	 * The entries can be 'topic name', 'property-placeholder keys' or 'expressions'.
 	 * An expression must be resolved to the topic name.
+	 * This uses group management and Kafka will assign partitions to group members.
 	 * <p>
 	 * Mutually exclusive with {@link #topicPattern()} and {@link #topicPartitions()}.
 	 * @return the topic names or expressions (SpEL) to listen to.
@@ -126,6 +127,7 @@ public @interface KafkaListener {
 	 * dynamically assigned partitions. The pattern matching will be performed
 	 * periodically against topics existing at the time of check. An expression must
 	 * be resolved to the topic pattern (String or Pattern result types are supported).
+	 * This uses group management and Kafka will assign partitions to group members.
 	 * <p>
 	 * Mutually exclusive with {@link #topics()} and {@link #topicPartitions()}.
 	 * @return the topic pattern or expression (SpEL).
@@ -134,7 +136,8 @@ public @interface KafkaListener {
 	String topicPattern() default "";
 
 	/**
-	 * The topicPartitions for this listener.
+	 * The topicPartitions for this listener when using manual topic/partition
+	 * assignment.
 	 * <p>
 	 * Mutually exclusive with {@link #topicPattern()} and {@link #topics()}.
 	 * @return the topic names or expressions (SpEL) to listen to.

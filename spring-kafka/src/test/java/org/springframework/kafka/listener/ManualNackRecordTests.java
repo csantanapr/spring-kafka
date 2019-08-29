@@ -73,7 +73,6 @@ public class ManualNackRecordTests {
 	@SuppressWarnings("rawtypes")
 	@Autowired
 	private Consumer consumer;
-
 	@Autowired
 	private Config config;
 
