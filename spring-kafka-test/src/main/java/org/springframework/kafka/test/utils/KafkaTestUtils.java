@@ -72,7 +72,9 @@ public final class KafkaTestUtils {
 	 * @param embeddedKafka a {@link EmbeddedKafkaBroker} instance.
 	 * @return the properties.
 	 */
-	public static Map<String, Object> consumerProps(String group, String autoCommit, EmbeddedKafkaBroker embeddedKafka) {
+	public static Map<String, Object> consumerProps(String group, String autoCommit,
+			EmbeddedKafkaBroker embeddedKafka) {
+
 		return consumerProps(embeddedKafka.getBrokersAsString(), group, autoCommit);
 	}
 
@@ -213,7 +215,7 @@ public final class KafkaTestUtils {
 	 * @since 2.3
 	 */
 	public static OffsetAndMetadata getCurrentOffset(String brokerAddresses, String group, String topic, int partition)
-			throws Exception {
+			throws Exception { // NOSONAR
 
 		try (AdminClient client = AdminClient
 				.create(Collections.singletonMap(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddresses))) {
