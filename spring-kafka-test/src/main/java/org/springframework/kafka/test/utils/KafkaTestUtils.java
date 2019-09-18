@@ -174,6 +174,7 @@ public final class KafkaTestUtils {
 	 * @param topic the topic.
 	 * @param partition the partition.
 	 * @param seekToLast true to fetch an existing last record, if present.
+	 * @param commit commit offset after polling or not.
 	 * @param timeout the timeout.
 	 * @return the record or null if no record received.
 	 * @since 2.3
