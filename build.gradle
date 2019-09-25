@@ -49,7 +49,7 @@ ext {
 	log4jVersion = '2.12.1'
 	micrometerVersion = '1.2.1'
 	mockitoVersion = '3.0.0'
-	reactorVersion = 'Dysprosium-BUILD-SNAPSHOT'
+	reactorVersion = 'Dysprosium-RELEASE'
 	scalaVersion = '2.12'
 	springRetryVersion = '1.2.4.RELEASE'
 	springVersion = '5.2.0.BUILD-SNAPSHOT'
