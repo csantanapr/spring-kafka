@@ -1007,6 +1007,7 @@ public void listen(String data, Acknowledgment ack) {
 Finally, metadata about the message is available from message headers.
 You can use the following header names to retrieve the headers of the message:
 
+* `KafkaHeaders.OFFSET`
 * `KafkaHeaders.RECEIVED_MESSAGE_KEY`
 * `KafkaHeaders.RECEIVED_TOPIC`
 * `KafkaHeaders.RECEIVED_PARTITION_ID`
