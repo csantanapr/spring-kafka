@@ -271,44 +271,48 @@ public class DefaultKafkaHeaderMapper extends AbstractKafkaHeaderMapper {
 		source.forEach(header -> {
 			if (!(header.key().equals(JSON_TYPES))) {
 				if (jsonTypes != null && jsonTypes.containsKey(header.key())) {
-					Class<?> type = Object.class;
 					String requestedType = jsonTypes.get(header.key());
-					boolean trusted = false;
-					try {
-						trusted = trusted(requestedType);
-						if (trusted) {
-							type = ClassUtils.forName(requestedType, null);
-						}
-					}
-					catch (Exception e) {
-						logger.error(e, () -> "Could not load class for header: " + header.key());
-					}
-					if (String.class.equals(type) && header.value().length > 0 && header.value()[0] != '"') {
-						headers.put(header.key(), new String(header.value(), getCharset()));
-					}
-					else {
-						if (trusted) {
-							try {
-								Object value = decodeValue(header, type);
-								headers.put(header.key(), value);
-							}
-							catch (IOException e) {
-								logger.error(e, () ->
-										"Could not decode json type: " + new String(header.value()) + " for key: "
-												+ header.key());
-								headers.put(header.key(), header.value());
-							}
-						}
-						else {
-							headers.put(header.key(), new NonTrustedHeaderType(header.value(), requestedType));
-						}
-					}
+					populateJsonValueHeader(header, requestedType, headers);
 				}
 				else {
 					headers.put(header.key(), headerValueToAddIn(header));
 				}
 			}
 		});
+	}
+
+	private void populateJsonValueHeader(Header header, String requestedType, Map<String, Object> headers) {
+		Class<?> type = Object.class;
+		boolean trusted = false;
+		try {
+			trusted = trusted(requestedType);
+			if (trusted) {
+				type = ClassUtils.forName(requestedType, null);
+			}
+		}
+		catch (Exception e) {
+			logger.error(e, () -> "Could not load class for header: " + header.key());
+		}
+		if (String.class.equals(type) && header.value().length > 0 && header.value()[0] != '"') {
+			headers.put(header.key(), new String(header.value(), getCharset()));
+		}
+		else {
+			if (trusted) {
+				try {
+					Object value = decodeValue(header, type);
+					headers.put(header.key(), value);
+				}
+				catch (IOException e) {
+					logger.error(e, () ->
+							"Could not decode json type: " + new String(header.value()) + " for key: "
+									+ header.key());
+					headers.put(header.key(), header.value());
+				}
+			}
+			else {
+				headers.put(header.key(), new NonTrustedHeaderType(header.value(), requestedType));
+			}
+		}
 	}
 
 	private Object decodeValue(Header h, Class<?> type) throws IOException, LinkageError {

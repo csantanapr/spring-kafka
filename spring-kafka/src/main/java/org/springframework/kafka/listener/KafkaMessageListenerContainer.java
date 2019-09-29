@@ -337,7 +337,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 				publishConsumerFailedToStart();
 			}
 		}
-		catch (@SuppressWarnings("unused") InterruptedException e) {
+		catch (@SuppressWarnings(UNUSED) InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
 	}
@@ -829,7 +829,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 							this.containerProperties.getMicrometerTags());
 				}
 			}
-			catch (@SuppressWarnings("unused") IllegalStateException ex) {
+			catch (@SuppressWarnings(UNUSED) IllegalStateException ex) {
 				// NOSONAR - no micrometer or meter registry
 			}
 			return holder;
@@ -1508,7 +1508,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 			try {
 				Thread.sleep(this.nackSleep);
 			}
-			catch (@SuppressWarnings("unused") InterruptedException e) {
+			catch (@SuppressWarnings(UNUSED) InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
 			this.nackSleep = -1;
