@@ -231,7 +231,7 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 
 	/**
 	 * Get the port that the embedded Zookeeper is running on or will run on.
-	 * @param zkPort the port.
+	 * @return the port.
 	 * @since 2.3
 	 */
 	public int getZkPort() {
