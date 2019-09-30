@@ -610,7 +610,7 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 			int n = 0;
 			while (n++ < 100) {
 				try {
-					ZkFourLetterWords.sendStat("127.0.0.1", port, 3000);
+					ZkFourLetterWords.sendStat("127.0.0.1", this.port, 3000);
 					Thread.sleep(100);
 				}
 				catch (@SuppressWarnings("unused") Exception e) {

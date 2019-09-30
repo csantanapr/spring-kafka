@@ -108,11 +108,13 @@ public @interface EmbeddedKafka {
 	int partitions() default 2;
 
 	/**
-	 * Topics that should be created Topics may contain property placeholders, e.g.
+	 * Topics that should be created Topics may contain property place holders, e.g.
 	 * {@code topics = "${kafka.topic.one:topicOne}"} The topics will be created with
 	 * {@link #partitions()} partitions; to provision other topics with other partition
 	 * counts call the {@code addTopics(NewTopic... topics)} method on the autowired
 	 * broker.
+	 * Place holders will only be resolved when there is a Spring test application
+	 * context present (such as when using {@code @SpringJunitConfig or @SpringRunner}.
 	 * @return the topics to create
 	 */
 	String[] topics() default { };
@@ -120,7 +122,9 @@ public @interface EmbeddedKafka {
 	/**
 	 * Properties in form {@literal key=value} that should be added to the broker config
 	 * before runs. When used in a Spring test context, properties may contain property
-	 * placeholders, e.g. {@code delete.topic.enable=${topic.delete:true}}.
+	 * place holders, e.g. {@code delete.topic.enable=${topic.delete:true}}.
+	 * Place holders will only be resolved when there is a Spring test application
+	 * context present (such as when using {@code @SpringJunitConfig or @SpringRunner}.
 	 * @return the properties to add
 	 * @see #brokerPropertiesLocation()
 	 * @see org.springframework.kafka.test.EmbeddedKafkaBroker#brokerProperties(java.util.Map)
@@ -131,9 +135,11 @@ public @interface EmbeddedKafka {
 	 * Spring {@code Resource} url specifying the location of properties that should be
 	 * added to the broker config. When used in a Spring test context, the
 	 * {@code brokerPropertiesLocation} url and the properties themselves may contain
-	 * placeholders that are resolved during initialization. Properties specified by
+	 * place holders that are resolved during initialization. Properties specified by
 	 * {@link #brokerProperties()} will override properties found in
 	 * {@code brokerPropertiesLocation}.
+	 * Place holders will only be resolved when there is a Spring test application
+	 * context present (such as when using {@code @SpringJunitConfig or @SpringRunner}.
 	 * @return a {@code Resource} url specifying the location of properties to add
 	 * @see #brokerProperties()
 	 * @see org.springframework.kafka.test.EmbeddedKafkaBroker#brokerProperties(java.util.Map)
