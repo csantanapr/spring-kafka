@@ -86,6 +86,8 @@ import kafka.zk.ZkFourLetterWords;
  */
 public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 
+	private static final String LOOPBACK = "127.0.0.1";
+
 	private static final LogAccessor logger = new LogAccessor(LogFactory.getLog(EmbeddedKafkaBroker.class)); // NOSONAR
 
 	public static final String BEAN_NAME = "embeddedKafka";
@@ -258,7 +260,7 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 		int zkConnectionTimeout = 6000; // NOSONAR magic #
 		int zkSessionTimeout = 6000; // NOSONAR magic #
 
-		this.zkConnect = "127.0.0.1:" + this.zookeeper.getPort();
+		this.zkConnect = LOOPBACK + ":" + this.zookeeper.getPort();
 		this.zookeeperClient = new ZkClient(this.zkConnect, zkSessionTimeout, zkConnectionTimeout,
 				ZKStringSerializer$.MODULE$);
 		this.kafkaServers.clear();
@@ -434,13 +436,13 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 
 	public BrokerAddress getBrokerAddress(int i) {
 		KafkaServer kafkaServer = this.kafkaServers.get(i);
-		return new BrokerAddress("127.0.0.1", kafkaServer.config().port());
+		return new BrokerAddress(LOOPBACK, kafkaServer.config().port());
 	}
 
 	public BrokerAddress[] getBrokerAddresses() {
 		List<BrokerAddress> addresses = new ArrayList<BrokerAddress>();
 		for (int kafkaPort : this.kafkaPorts) {
-			addresses.add(new BrokerAddress("127.0.0.1", kafkaPort));
+			addresses.add(new BrokerAddress(LOOPBACK, kafkaPort));
 		}
 		return addresses.toArray(new BrokerAddress[0]);
 	}
@@ -560,6 +562,12 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 	 */
 	public static final class EmbeddedZookeeper {
 
+		private static final int THREE_K = 3000;
+
+		private static final int HUNDRED = 100;
+
+		private static final int TICK_TIME = 800; // allow a maxSessionTimeout of 20 * 800ms = 16 secs
+
 		private final NIOServerCnxnFactory factory;
 
 		private final ZooKeeperServer zookeeper;
@@ -573,14 +581,12 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 		public EmbeddedZookeeper(int zkPort) throws IOException, InterruptedException {
 			this.snapshotDir = TestUtils.tempDir();
 			this.logDir = TestUtils.tempDir();
-			int tickTime = 800; // allow a maxSessionTimeout of 20 * 800ms = 16 secs
-
 			System.setProperty("zookeeper.forceSync", "no"); // disable fsync to ZK txn
 																// log in tests to avoid
 																// timeout
-			this.zookeeper = new ZooKeeperServer(this.snapshotDir, this.logDir, tickTime);
+			this.zookeeper = new ZooKeeperServer(this.snapshotDir, this.logDir, TICK_TIME);
 			this.factory = new NIOServerCnxnFactory();
-			InetSocketAddress addr = new InetSocketAddress("127.0.0.1", zkPort == 0 ? TestUtils.RandomPort() : zkPort);
+			InetSocketAddress addr = new InetSocketAddress(LOOPBACK, zkPort == 0 ? TestUtils.RandomPort() : zkPort);
 			this.factory.configure(addr, 0);
 			this.factory.startup(zookeeper);
 			this.port = zookeeper.getClientPort();
@@ -608,16 +614,16 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 			}
 
 			int n = 0;
-			while (n++ < 100) {
+			while (n++ < HUNDRED) {
 				try {
-					ZkFourLetterWords.sendStat("127.0.0.1", this.port, 3000);
-					Thread.sleep(100);
+					ZkFourLetterWords.sendStat(LOOPBACK, this.port, THREE_K);
+					Thread.sleep(HUNDRED);
 				}
 				catch (@SuppressWarnings("unused") Exception e) {
 					break;
 				}
 			}
-			if (n == 100) {
+			if (n == HUNDRED) {
 				logger.debug("Zookeeper failed to stop");
 			}
 
