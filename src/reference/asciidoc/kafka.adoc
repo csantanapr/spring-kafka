@@ -1815,7 +1815,7 @@ However, see the note at the beginning of this section; you can avoid using the 
 
 IMPORTANT: If the recoverer fails (throws an exception), the record will be included in the seeks and recovery will be attempted again during the next delivery.
 
-[[events]]
+[[lifecycle-events]]
 ===== Listener Consumer Lifecycle Events
 
 The following events are published when containers are started and stopped:
