@@ -46,8 +46,6 @@ class FailedRecordTracker {
 
 	private final BackOff backOff;
 
-	private final LogAccessor logger;
-
 	FailedRecordTracker(@Nullable BiConsumer<ConsumerRecord<?, ?>, Exception> recoverer, BackOff backOff,
 			LogAccessor logger) {
 
@@ -71,7 +69,6 @@ class FailedRecordTracker {
 		}
 		this.noRetries = backOff.start().nextBackOff() == BackOffExecution.STOP;
 		this.backOff = backOff;
-		this.logger = logger;
 	}
 
 	boolean skip(ConsumerRecord<?, ?> record, Exception exception) {
