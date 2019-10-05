@@ -195,8 +195,7 @@ public abstract class FailedRecordProcessor {
 		classified.put(MethodArgumentResolutionException.class, false);
 		classified.put(NoSuchMethodException.class, false);
 		classified.put(ClassCastException.class, false);
-		ExtendedBinaryExceptionClassifier defaultClassifier = new ExtendedBinaryExceptionClassifier(classified, true);
-		return defaultClassifier;
+		return new ExtendedBinaryExceptionClassifier(classified, true);
 	}
 
 	/**

@@ -167,8 +167,8 @@ public class DefaultAfterRollbackProcessor<K, V> extends FailedRecordProcessor i
 	 * @see #setKafkaTemplate(KafkaTemplate)
 	 */
 	@Override
-	public void setCommitRecovered(boolean commitRecovered) {
-		super.setCommitRecovered(commitRecovered); // NOSONAR enhanced javadoc
+	public void setCommitRecovered(boolean commitRecovered) { // NOSONAR enhanced javadoc
+		super.setCommitRecovered(commitRecovered);
 	}
 
 	/**
