@@ -1254,7 +1254,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 		 * @return an exception.
 		 * @throws Error an error.
 		 */
-		private RuntimeException doInvokeBatchListener(final ConsumerRecords<K, V> records,
+		private RuntimeException doInvokeBatchListener(final ConsumerRecords<K, V> records, // NOSONAR
 				List<ConsumerRecord<K, V>> recordList, @SuppressWarnings(RAW_TYPES) Producer producer) {
 
 			Object sample = startMicrometerSample();
@@ -1275,9 +1275,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 					invokeBatchErrorHandler(records, e);
 					// unlikely, but possible, that a batch error handler "handles" the error
 					if ((!acked && !this.autoCommit && this.batchErrorHandler.isAckAfterHandle()) || producer != null) {
-						if (!acked) {
-							this.acks.addAll(getHighestOffsetRecords(records));
-						}
+						this.acks.addAll(getHighestOffsetRecords(records));
 						if (producer != null) {
 							sendOffsetsToTransaction(producer);
 						}
@@ -1527,9 +1525,8 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 		 * @return an exception.
 		 * @throws Error an error.
 		 */
-		private RuntimeException doInvokeRecordListener(final ConsumerRecord<K, V> record,
-				@SuppressWarnings(RAW_TYPES) Producer producer,
-				Iterator<ConsumerRecord<K, V>> iterator) {
+		private RuntimeException doInvokeRecordListener(final ConsumerRecord<K, V> record, // NOSONAR
+				@SuppressWarnings(RAW_TYPES) Producer producer, Iterator<ConsumerRecord<K, V>> iterator) {
 
 			Object sample = startMicrometerSample();
 
