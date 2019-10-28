@@ -57,6 +57,7 @@ import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
@@ -65,7 +66,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
  *
  */
 @SpringJUnitConfig
-@DirtiesContext
+@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 public class SubBatchPerPartitionTests {
 
 	private static final String CONTAINER_ID = "container";
@@ -86,7 +87,8 @@ public class SubBatchPerPartitionTests {
 	 */
 	@SuppressWarnings("unchecked")
 	@Test
-	public void discardRemainingRecordsFromPollAndSeek() throws Exception {
+	void discardRemainingRecordsFromPollAndSeek() throws Exception {
+		this.registry.getListenerContainer(CONTAINER_ID).start();
 		assertThat(this.config.deliveryLatch.await(10, TimeUnit.SECONDS)).isTrue();
 		assertThat(this.config.commitLatch.await(10, TimeUnit.SECONDS)).isTrue();
 		assertThat(this.config.pollLatch.await(10, TimeUnit.SECONDS)).isTrue();
@@ -98,6 +100,25 @@ public class SubBatchPerPartitionTests {
 		inOrder.verify(this.consumer, times(3)).commitSync(any(), eq(Duration.ofSeconds(60)));
 		inOrder.verify(this.consumer).poll(Duration.ofMillis(ContainerProperties.DEFAULT_POLL_TIMEOUT));
 		assertThat(this.config.contents).contains("foo", "bar", "baz", "qux", "fiz", "buz");
+		this.registry.stop();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	void withFilter() throws Exception {
+		this.registry.getListenerContainer(CONTAINER_ID + ".filtered").start();
+		assertThat(this.config.deliveryLatch.await(10, TimeUnit.SECONDS)).isTrue();
+		assertThat(this.config.commitLatch.await(10, TimeUnit.SECONDS)).isTrue();
+		assertThat(this.config.pollLatch.await(10, TimeUnit.SECONDS)).isTrue();
+		this.registry.stop();
+		assertThat(this.config.closeLatch.await(10, TimeUnit.SECONDS)).isTrue();
+		InOrder inOrder = inOrder(this.consumer);
+		inOrder.verify(this.consumer).subscribe(any(Collection.class), any(ConsumerRebalanceListener.class));
+		inOrder.verify(this.consumer).poll(Duration.ofMillis(ContainerProperties.DEFAULT_POLL_TIMEOUT));
+		inOrder.verify(this.consumer, times(3)).commitSync(any(), eq(Duration.ofSeconds(60)));
+		inOrder.verify(this.consumer).poll(Duration.ofMillis(ContainerProperties.DEFAULT_POLL_TIMEOUT));
+		assertThat(this.config.filtered).contains("bar", "qux", "buz");
+		this.registry.stop();
 	}
 
 	@Configuration
@@ -105,6 +126,8 @@ public class SubBatchPerPartitionTests {
 	public static class Config {
 
 		private final List<String> contents = new ArrayList<>();
+
+		private final List<String> filtered = new ArrayList<>();
 
 		private final CountDownLatch pollLatch = new CountDownLatch(2);
 
@@ -114,9 +137,16 @@ public class SubBatchPerPartitionTests {
 
 		private final CountDownLatch closeLatch = new CountDownLatch(1);
 
-		@KafkaListener(id = CONTAINER_ID, topics = "foo")
+		@KafkaListener(id = CONTAINER_ID, topics = "foo", autoStartup = "false")
 		public void foo(List<String> in) {
 			contents.addAll(in);
+			this.deliveryLatch.countDown();
+		}
+
+		@KafkaListener(id = CONTAINER_ID + ".filtered", topics = "foo", autoStartup = "false",
+				containerFactory = "filteredFactory")
+		public void filtered(List<String> in) {
+			filtered.addAll(in);
 			this.deliveryLatch.countDown();
 		}
 
@@ -125,8 +155,9 @@ public class SubBatchPerPartitionTests {
 		public ConsumerFactory consumerFactory() {
 			ConsumerFactory consumerFactory = mock(ConsumerFactory.class);
 			final Consumer consumer = consumer();
-			given(consumerFactory.createConsumer(CONTAINER_ID, "", "-0", KafkaTestUtils.defaultPropertyOverrides()))
-				.willReturn(consumer);
+			given(consumerFactory.createConsumer(any(), eq(""), eq("-0"),
+					eq(KafkaTestUtils.defaultPropertyOverrides())))
+							.willReturn(consumer);
 			return consumerFactory;
 		}
 
@@ -152,10 +183,13 @@ public class SubBatchPerPartitionTests {
 			records1.put(topicPartition2, Arrays.asList(
 					new ConsumerRecord("foo", 2, 0L, 0L, TimestampType.NO_TIMESTAMP_TYPE, 0, 0, 0, null, "fiz"),
 					new ConsumerRecord("foo", 2, 1L, 0L, TimestampType.NO_TIMESTAMP_TYPE, 0, 0, 0, null, "buz")));
-			final AtomicInteger which = new AtomicInteger();
+			final ThreadLocal<AtomicInteger> which = new ThreadLocal<>();
 			willAnswer(i -> {
 				this.pollLatch.countDown();
-				switch (which.getAndIncrement()) {
+				if (which.get() == null) {
+					which.set(new AtomicInteger());
+				}
+				switch (which.get().getAndIncrement()) {
 					case 0:
 						return new ConsumerRecords(records1);
 					default:
@@ -188,6 +222,19 @@ public class SubBatchPerPartitionTests {
 			factory.setBatchListener(true);
 			factory.getContainerProperties().setMissingTopicsFatal(false);
 			factory.getContainerProperties().setSubBatchPerPartition(true);
+			return factory;
+		}
+
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		@Bean
+		public ConcurrentKafkaListenerContainerFactory filteredFactory() {
+			ConcurrentKafkaListenerContainerFactory factory = new ConcurrentKafkaListenerContainerFactory();
+			factory.setConsumerFactory(consumerFactory());
+			factory.getContainerProperties().setAckOnError(false);
+			factory.setBatchListener(true);
+			factory.getContainerProperties().setMissingTopicsFatal(false);
+			factory.getContainerProperties().setSubBatchPerPartition(true);
+			factory.setRecordFilterStrategy(rec -> rec.offset() == 0);
 			return factory;
 		}
 
