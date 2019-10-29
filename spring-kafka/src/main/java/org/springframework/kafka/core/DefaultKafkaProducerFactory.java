@@ -200,9 +200,6 @@ public class DefaultKafkaProducerFactory<K, V> extends KafkaResourceFactory
 		String txId = (String) this.configs.get(ProducerConfig.TRANSACTIONAL_ID_CONFIG);
 		if (StringUtils.hasText(txId)) {
 			setTransactionIdPrefix(txId);
-			LOGGER.info(() -> "If 'setTransactionIdPrefix()' is not configured, "
-					+ "the existing 'transactional.id' config with value: '" + txId
-					+ "' will be suffixed for concurrent transaction support.");
 			this.configs.remove(ProducerConfig.TRANSACTIONAL_ID_CONFIG);
 		}
 	}
