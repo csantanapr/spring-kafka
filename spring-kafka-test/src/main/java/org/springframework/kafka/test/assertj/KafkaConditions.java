@@ -102,8 +102,12 @@ public final class KafkaConditions {
 
 		@Override
 		public boolean matches(ConsumerRecord<K, ?> value) {
-			return value != null && ((value.key() == null && this.key == null)
-					|| (value.key() != null && value.key().equals(this.key)));
+			if (value == null) {
+				return false;
+			}
+			return value.key() == null
+					? this.key == null
+					: value.key().equals(this.key);
 		}
 
 	}
@@ -119,9 +123,12 @@ public final class KafkaConditions {
 
 		@Override
 		public boolean matches(ConsumerRecord<?, V> value) {
-			return value != null
-					&& (value.value() == null && this.payload == null
-					|| (value.value() != null && value.value().equals(this.payload)));
+			if (value == null) {
+				return false;
+			}
+			return value.value() == null
+					? this.payload == null
+					: value.value().equals(this.payload);
 		}
 
 	}

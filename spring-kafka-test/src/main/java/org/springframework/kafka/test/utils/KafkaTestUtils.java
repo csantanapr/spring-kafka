@@ -165,7 +165,7 @@ public final class KafkaTestUtils {
 			});
 			reset.forEach((tp, off) -> consumer.seek(tp, off));
 			try {
-				Thread.sleep(50);
+				Thread.sleep(50); // NOSONAR magic#
 			}
 			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
