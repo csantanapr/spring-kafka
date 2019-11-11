@@ -57,7 +57,7 @@ public abstract class FailedRecordProcessor {
 	private boolean commitRecovered;
 
 	protected FailedRecordProcessor(@Nullable BiConsumer<ConsumerRecord<?, ?>, Exception> recoverer, BackOff backOff) {
-		this.failureTracker = new FailedRecordTracker(recoverer, backOff, logger);
+		this.failureTracker = new FailedRecordTracker(recoverer, backOff, this.logger);
 		this.classifier = configureDefaultClassifier();
 	}
 
@@ -67,7 +67,7 @@ public abstract class FailedRecordProcessor {
 	 * @param maxFailures the max failures.
 	 */
 	FailedRecordProcessor(@Nullable BiConsumer<ConsumerRecord<?, ?>, Exception> recoverer, int maxFailures) {
-		this.failureTracker = new FailedRecordTracker(recoverer, maxFailuresToBackOff(maxFailures), logger);
+		this.failureTracker = new FailedRecordTracker(recoverer, maxFailuresToBackOff(maxFailures), this.logger);
 		this.classifier = configureDefaultClassifier();
 	}
 
@@ -183,7 +183,7 @@ public abstract class FailedRecordProcessor {
 				this.failureTracker.getRecoverer().accept(records.get(0), thrownException);
 			}
 			catch (Exception ex) {
-				logger.error(ex, () -> "Recovery of record (" + records.get(0) + ") failed");
+				this.logger.error(ex, () -> "Recovery of record (" + records.get(0) + ") failed");
 				return NEVER_SKIP_PREDICATE;
 			}
 			return ALWAYS_SKIP_PREDICATE;
