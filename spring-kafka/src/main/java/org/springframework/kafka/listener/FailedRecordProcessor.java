@@ -48,8 +48,7 @@ public abstract class FailedRecordProcessor {
 
 	private static final BiPredicate<ConsumerRecord<?, ?>, Exception> NEVER_SKIP_PREDICATE = (r, e) -> false;
 
-	protected static final LogAccessor LOGGER =
-			new LogAccessor(LogFactory.getLog(SeekToCurrentErrorHandler.class)); // NOSONAR
+	protected final LogAccessor logger = new LogAccessor(LogFactory.getLog(getClass())); // NOSONAR
 
 	private final FailedRecordTracker failureTracker;
 
@@ -58,7 +57,7 @@ public abstract class FailedRecordProcessor {
 	private boolean commitRecovered;
 
 	protected FailedRecordProcessor(@Nullable BiConsumer<ConsumerRecord<?, ?>, Exception> recoverer, BackOff backOff) {
-		this.failureTracker = new FailedRecordTracker(recoverer, backOff, LOGGER);
+		this.failureTracker = new FailedRecordTracker(recoverer, backOff, logger);
 		this.classifier = configureDefaultClassifier();
 	}
 
@@ -68,7 +67,7 @@ public abstract class FailedRecordProcessor {
 	 * @param maxFailures the max failures.
 	 */
 	FailedRecordProcessor(@Nullable BiConsumer<ConsumerRecord<?, ?>, Exception> recoverer, int maxFailures) {
-		this.failureTracker = new FailedRecordTracker(recoverer, maxFailuresToBackOff(maxFailures), LOGGER);
+		this.failureTracker = new FailedRecordTracker(recoverer, maxFailuresToBackOff(maxFailures), logger);
 		this.classifier = configureDefaultClassifier();
 	}
 
@@ -184,7 +183,7 @@ public abstract class FailedRecordProcessor {
 				this.failureTracker.getRecoverer().accept(records.get(0), thrownException);
 			}
 			catch (Exception ex) {
-				LOGGER.error(ex, () -> "Recovery of record (" + records.get(0) + ") failed");
+				logger.error(ex, () -> "Recovery of record (" + records.get(0) + ") failed");
 				return NEVER_SKIP_PREDICATE;
 			}
 			return ALWAYS_SKIP_PREDICATE;

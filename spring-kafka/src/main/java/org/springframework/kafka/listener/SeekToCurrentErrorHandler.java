@@ -196,7 +196,7 @@ public class SeekToCurrentErrorHandler extends FailedRecordProcessor implements 
 		}
 
 		if (!SeekUtils.doSeeks(records, consumer, thrownException, true, getSkipPredicate(records, thrownException),
-				LOGGER)) {
+				logger)) {
 			throw new KafkaException("Seek to current after exception", thrownException);
 		}
 		if (isCommitRecovered()) {
@@ -217,7 +217,7 @@ public class SeekToCurrentErrorHandler extends FailedRecordProcessor implements 
 				}
 			}
 			else {
-				LOGGER.warn(() -> "'commitRecovered' ignored, container AckMode must be MANUAL_IMMEDIATE, not "
+				logger.warn(() -> "'commitRecovered' ignored, container AckMode must be MANUAL_IMMEDIATE, not "
 						+ container.getContainerProperties().getAckMode());
 			}
 		}

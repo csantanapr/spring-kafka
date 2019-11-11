@@ -140,7 +140,7 @@ public class DefaultAfterRollbackProcessor<K, V> extends FailedRecordProcessor i
 			boolean recoverable) {
 
 		if (SeekUtils.doSeeks(((List) records), consumer, exception, recoverable,
-				getSkipPredicate((List) records, exception), LOGGER)
+				getSkipPredicate((List) records, exception), logger)
 					&& isCommitRecovered() && this.kafkaTemplate != null && this.kafkaTemplate.isTransactional()) {
 			ConsumerRecord<K, V> skipped = records.get(0);
 			this.kafkaTemplate.sendOffsetsToTransaction(
