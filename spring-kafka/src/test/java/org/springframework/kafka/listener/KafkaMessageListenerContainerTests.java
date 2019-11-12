@@ -31,6 +31,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.withSettings;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -2268,7 +2269,7 @@ public class KafkaMessageListenerContainerTests {
 	@Test
 	public void testPauseResumeAndConsumerSeekAware() throws Exception {
 		ConsumerFactory<Integer, String> cf = mock(ConsumerFactory.class);
-		Consumer<Integer, String> consumer = mock(Consumer.class);
+		Consumer<Integer, String> consumer = mock(Consumer.class, withSettings().verboseLogging());
 		given(cf.createConsumer(eq("grp"), eq("clientId"), isNull(), any())).willReturn(consumer);
 		Map<String, Object> cfProps = new LinkedHashMap<>();
 		cfProps.put(ConsumerConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, 45000);
