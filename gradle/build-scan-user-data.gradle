@@ -2,7 +2,7 @@ tagOs()
 tagIde()
 tagCiOrLocal()
 addCiMetadata()
-//addGitMetadata()
+addGitMetadata()
 //addTestTaskMetadata()
 
 void tagOs() {
@@ -82,7 +82,7 @@ String customValueSearchUrl(Map<String, String> search) {
 		"search.names=${encodeURL(name)}&search.values=${encodeURL(value)}"
 	}.join('&')
 
-	"$buildScan.server/scans?$query"
+	"$gradleEnterprise.buildScan.server/scans?$query"
 }
 
 String encodeURL(String url) {
