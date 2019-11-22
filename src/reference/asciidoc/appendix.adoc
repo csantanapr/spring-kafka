@@ -4,19 +4,21 @@
 
 When you use `spring-kafka-test` (version 2.2.x) with the 2.1.x `kafka-clients` jar, you need to override certain transitive dependencies, as follows:
 
+**maven**
+
 ====
-[source, xml]
+[source, xml, subs="+attributes"]
 ----
 <dependency>
     <groupId>org.springframework.kafka</groupId>
     <artifactId>spring-kafka</artifactId>
-    <version>${spring.kafka.version}</version>
+    <version>{project-version}</version>
 </dependency>
 
 <dependency>
     <groupId>org.springframework.kafka</groupId>
     <artifactId>spring-kafka-test</artifactId>
-    <version>${spring.kafka.version}</version>
+    <version>{project-version}</version>
     <exclusions>
         <exclusion>
             <groupId>org.apache.kafka</groupId>
@@ -55,6 +57,28 @@ When you use `spring-kafka-test` (version 2.2.x) with the 2.1.x `kafka-clients` 
 </dependency>
 ----
 ====
+
+**gradle**
+
+====
+[source, groovy, subs="+attributes"]
+----
+dependencies {
+
+	implementation 'org.springframework.kafka:spring-kafka:{project-version}'
+
+	implementation 'org.apache.kafka:kafka-clients:2.1.1'
+	testImplementation ('org.springframework.kafka:spring-kafka-test:{project-version}') {
+		exclude module: 'kafka_2.11'
+	}
+	testImplementation 'org.apache.kafka:kafka-clients:2.1.1:test'
+	testImplementation 'org.apache.kafka:kafka_2.12:2.1.1'
+	testImplementation 'org.apache.kafka:kafka_2.12:2.1.1:test'
+
+}
+----
+====
+
 Note that when switching to scala 2.12 (recommended for 2.1.x and higher), the 2.11 version must be excluded from spring-kafka-test.
 ////
 

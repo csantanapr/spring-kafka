@@ -6,6 +6,7 @@
 .idea
 .project
 .settings
+.sts4-cache
 .checkstyle
 bin
 build
