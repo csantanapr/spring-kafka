@@ -542,6 +542,8 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 	 * Subscribe a consumer to one or more of the embedded topics.
 	 * @param consumer the consumer.
 	 * @param topicsToConsume the topics.
+	 * @throws IllegalStateException if you attempt to consume from a topic that is not in
+	 * the list of embedded topics (since 2.3.4).
 	 */
 	public void consumeFromEmbeddedTopics(Consumer<?, ?> consumer, String... topicsToConsume) {
 		List<String> notEmbedded = Arrays.stream(topicsToConsume)
