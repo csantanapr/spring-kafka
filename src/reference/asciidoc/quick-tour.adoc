@@ -28,6 +28,28 @@ compile 'org.springframework.kafka:spring-kafka:{project-version}'
 ----
 ====
 
+IMPORTANT: When using Spring Boot, omit the version and Boot will automatically bring in the correct version that is compatible with your Boot version:
+
+====
+[source,xml,subs="+attributes"]
+----
+<dependency>
+  <groupId>org.springframework.kafka</groupId>
+  <artifactId>spring-kafka</artifactId>
+</dependency>
+----
+====
+
+The following example shows how to do so with Gradle:
+
+====
+[source,groovy,subs="+attributes"]
+----
+compile 'org.springframework.kafka:spring-kafka'
+----
+====
+
+
 [[compatibility]]
 ==== Compatibility
 
