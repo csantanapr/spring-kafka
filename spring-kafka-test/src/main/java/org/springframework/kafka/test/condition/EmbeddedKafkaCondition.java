@@ -20,11 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.reflect.AnnotatedElement;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
