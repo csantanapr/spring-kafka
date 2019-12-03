@@ -16,8 +16,6 @@
 
 package org.springframework.kafka.test.utils;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -25,8 +23,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.MethodCallback;
-import org.springframework.util.ReflectionUtils.MethodFilter;
 
 /**
  * Utilities for testing listener containers. No hard references to container
@@ -45,6 +41,10 @@ public final class ContainerTestUtils {
 	 * Wait until the container has the required number of assigned partitions.
 	 * @param container the container.
 	 * @param partitions the number of partitions.
+	 * @throws IllegalStateException if the operation cannot be completed (since 2.3.4) as
+	 * expected.
+	 * @throws ContainerTestUtilsException if the call to the container's
+	 * getAssignedPartitions() method fails.
 	 */
 	public static void waitForAssignment(Object container, int partitions) {
 		if (container.getClass().getSimpleName().contains("KafkaMessageListenerContainer")) {
@@ -76,12 +76,14 @@ public final class ContainerTestUtils {
 				try {
 					Thread.sleep(100); // NOSONAR magic #
 				}
-				catch (InterruptedException e) {
+				catch (@SuppressWarnings("unused") InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}
 			}
 		}
-		assertThat(count).isEqualTo(partitions);
+		if (count != partitions) {
+			throw new IllegalStateException(String.format("Expected %d but got %d partitions", partitions, count));
+		}
 	}
 
 	private static void waitForSingleContainerAssignment(Object container, int partitions) {
@@ -104,30 +106,24 @@ public final class ContainerTestUtils {
 				try {
 					Thread.sleep(100); // NOSONAR magic #
 				}
-				catch (InterruptedException e) {
+				catch (@SuppressWarnings("unused") InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}
 			}
 		}
-		assertThat(count).isEqualTo(partitions);
+		if (count != partitions) {
+			throw new IllegalStateException(String.format("Expected %d but got %d partitions", partitions, count));
+		}
 	}
 
 	private static Method getAssignedPartitionsMethod(Class<?> clazz) {
 		final AtomicReference<Method> theMethod = new AtomicReference<Method>();
-		ReflectionUtils.doWithMethods(clazz, new MethodCallback() {
-
-			@Override
-			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-				theMethod.set(method);
-			}
-		}, new MethodFilter() {
-
-			@Override
-			public boolean matches(Method method) {
-				return method.getName().equals("getAssignedPartitions") && method.getParameterTypes().length == 0;
-			}
-		});
-		assertThat(theMethod.get()).isNotNull();
+		ReflectionUtils.doWithMethods(clazz,
+				method -> theMethod.set(method),
+				method -> method.getName().equals("getAssignedPartitions") && method.getParameterTypes().length == 0);
+		if (theMethod.get() == null) {
+			throw new IllegalStateException(clazz + " has no getAssignedParitions() method");
+		}
 		return theMethod.get();
 	}
 
