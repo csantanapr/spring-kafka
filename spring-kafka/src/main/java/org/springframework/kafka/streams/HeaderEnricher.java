@@ -63,7 +63,7 @@ public class HeaderEnricher<K, V> implements Transformer<K, V, KeyValue<K, V>> {
 				headerValue = ((String) headerValue).getBytes(StandardCharsets.UTF_8);
 			}
 			else if (!(headerValue instanceof byte[])) {
-				throw new IllegalStateException("Invalid header value type" + headerValue.getClass());
+				throw new IllegalStateException("Invalid header value type: " + headerValue.getClass());
 			}
 			headers.add(new RecordHeader(name, (byte[]) headerValue));
 		});
