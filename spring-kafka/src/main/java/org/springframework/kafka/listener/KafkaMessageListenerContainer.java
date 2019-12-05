@@ -1558,10 +1558,8 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 			ConsumerRecord<K, V> next = nextArg;
 			if (this.earlyRecordInterceptor != null) {
 				next = this.earlyRecordInterceptor.intercept(next);
-				if (next == null) {
-					if (this.logger.isDebugEnabled()) {
-						this.logger.debug("RecordInterceptor returned null, skipping: " + next);
-					}
+				if (next == null && this.logger.isDebugEnabled()) {
+					this.logger.debug("RecordInterceptor returned null, skipping: " + nextArg);
 				}
 			}
 			return next;

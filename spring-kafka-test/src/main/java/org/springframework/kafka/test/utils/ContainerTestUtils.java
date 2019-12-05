@@ -46,7 +46,7 @@ public final class ContainerTestUtils {
 	 * @throws ContainerTestUtilsException if the call to the container's
 	 * getAssignedPartitions() method fails.
 	 */
-	public static void waitForAssignment(Object container, int partitions) {
+	public static void waitForAssignment(Object container, int partitions) { // NOSONAR complexity
 		if (container.getClass().getSimpleName().contains("KafkaMessageListenerContainer")) {
 			waitForSingleContainerAssignment(container, partitions);
 			return;
