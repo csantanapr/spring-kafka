@@ -60,6 +60,7 @@ import org.springframework.util.StringUtils;
  * @author Juergen Hoeller
  * @author Artem Bilan
  * @author Gary Russell
+ * @author Asi Bross
  *
  * @see KafkaListenerEndpoint
  * @see MessageListenerContainer
@@ -70,8 +71,7 @@ public class KafkaListenerEndpointRegistry implements DisposableBean, SmartLifec
 
 	protected final LogAccessor logger = new LogAccessor(LogFactory.getLog(getClass())); //NOSONAR
 
-	private final Map<String, MessageListenerContainer> listenerContainers =
-			new ConcurrentHashMap<String, MessageListenerContainer>();
+	private final Map<String, MessageListenerContainer> listenerContainers = new ConcurrentHashMap<>();
 
 	private int phase = AbstractMessageListenerContainer.DEFAULT_PHASE;
 
@@ -162,6 +162,7 @@ public class KafkaListenerEndpointRegistry implements DisposableBean, SmartLifec
 	@SuppressWarnings("unchecked")
 	public void registerListenerContainer(KafkaListenerEndpoint endpoint, KafkaListenerContainerFactory<?> factory,
 			boolean startImmediately) {
+
 		Assert.notNull(endpoint, "Endpoint must not be null");
 		Assert.notNull(factory, "Factory must not be null");
 
@@ -260,17 +261,19 @@ public class KafkaListenerEndpointRegistry implements DisposableBean, SmartLifec
 
 	@Override
 	public void stop() {
+		this.running = false;
 		for (MessageListenerContainer listenerContainer : getListenerContainers()) {
 			listenerContainer.stop();
 		}
-		this.running = false;
 	}
 
 	@Override
 	public void stop(Runnable callback) {
+		this.running = false;
 		Collection<MessageListenerContainer> listenerContainersToStop = getListenerContainers();
 		if (listenerContainersToStop.size() > 0) {
-			AggregatingCallback aggregatingCallback = new AggregatingCallback(listenerContainersToStop.size(), callback);
+			AggregatingCallback aggregatingCallback = new AggregatingCallback(listenerContainersToStop.size(),
+					callback);
 			for (MessageListenerContainer listenerContainer : listenerContainersToStop) {
 				if (listenerContainer.isRunning()) {
 					listenerContainer.stop(aggregatingCallback);
