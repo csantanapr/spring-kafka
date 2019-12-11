@@ -747,7 +747,7 @@ By default, logging of topic offset commits is performed at the `DEBUG` logging 
 Starting with version 2.1.2, a property in `ContainerProperties` called `commitLogLevel` lets you specify the log level for these messages.
 For example, to change the log level to `INFO`, you can use `containerProperties.setCommitLogLevel(LogIfLevelEnabled.Level.INFO);`.
 
-Starting with version 2.2, a new container property called `missingTopicsFatal` has been added (default: `true`).
+Starting with version 2.2, a new container property called `missingTopicsFatal` has been added (default: `false` since 2.3.4).
 This prevents the container from starting if any of the configured topics are not present on the broker.
 It does not apply if the container is configured to listen to a topic pattern (regex).
 Previously, the container threads looped within the `consumer.poll()` method waiting for the topic to appear while logging many messages.
