@@ -292,6 +292,8 @@ public class ConsumerProperties {
 	 * provided by the consumer factory; properties here will supersede any with the same
 	 * name(s) in the consumer factory.
 	 * {@code group.id} and {@code client.id} are ignored.
+	 * Property values must be {@link String}s; only properties returned by
+	 * {@link Properties#stringPropertyNames()} will be applied.
 	 * @param kafkaConsumerProperties the properties.
 	 * @see org.apache.kafka.clients.consumer.ConsumerConfig
 	 * @see #setGroupId(String)
