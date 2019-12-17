@@ -67,7 +67,7 @@ See <<committing-offsets>> for more information.
 Listener performance can now be monitored using Micrometer `Timer` s.
 See <<micrometer>> for more information.
 
-The containers now publish additional consumer lifecyle events relating to startup.
+The containers now publish additional consumer lifecycle events relating to startup.
 See <<events>> for more information.
 
 Transactional batch listeners can now support zombie fencing.

@@ -10,13 +10,13 @@ Also see <<new-in-sik>>.
 This version requires the 2.4.0 `kafka-clients` or higher and supports the new incremental rebalancing feature.
 
 [[x24-carl]]
-==== ConsumerAwareRabalanceListener
+==== ConsumerAwareRebalanceListener
 
 Like `ConsumerRebalanceListener`, this interface now has an additional method `onPartitionsLost`.
 Refer to the Apache Kafka documentation for more information.
 
 Unlike the `ConsumerRebalanceListener`, The default implementation does **not** call `onPartitionsRevoked`.
-Instead, the listener container will call that method after it has called `onPartitionsLost`; you should not, therefore, do the same when implementing `ConsumerAwareRabalanceListener`.
+Instead, the listener container will call that method after it has called `onPartitionsLost`; you should not, therefore, do the same when implementing `ConsumerAwareRebalanceListener`.
 
 See the IMPORTANT note at the end of <<rebalance-listeners>> for more information.
 
@@ -28,7 +28,7 @@ The `isAckAfterHandle()` default implementation now returns true by default.
 [[x24-agg]]
 ==== AggregatingReplyingKafkaTemplate
 
-The `releastStrategy` is now a `BiConsumer`.
+The `releaseStrategy` is now a `BiConsumer`.
 It is now called after a timeout (as well as when records arrive); the second parameter is `true` in the case of a call after a timeout.
 
 See <<aggregating-request-reply>> for more information.
