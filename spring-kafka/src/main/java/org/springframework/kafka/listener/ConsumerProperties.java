@@ -97,6 +97,8 @@ public class ConsumerProperties {
 
 	private Properties kafkaConsumerProperties = new Properties();
 
+	private Duration authorizationExceptionRetryInterval;
+
 	/**
 	 * Create properties for a container that will subscribe to the specified topics.
 	 * @param topics the topics.
@@ -304,6 +306,24 @@ public class ConsumerProperties {
 		this.kafkaConsumerProperties = kafkaConsumerProperties;
 	}
 
+	public Duration getAuthorizationExceptionRetryInterval() {
+		return this.authorizationExceptionRetryInterval;
+	}
+
+	/**
+	 * Set the interval between retries after {@code AuthorizationException} is thrown
+	 * by {@code KafkaConsumer}. By default the field is null and retries are disabled.
+	 * In such case the container will be stopped.
+	 *
+	 * The interval must be less than {@code max.poll.interval.ms} consumer property.
+	 *
+	 * @param authorizationExceptionRetryInterval the duration between retries
+	 * @since 2.3.5
+	 */
+	public void setAuthorizationExceptionRetryInterval(Duration authorizationExceptionRetryInterval) {
+		this.authorizationExceptionRetryInterval = authorizationExceptionRetryInterval;
+	}
+
 	@Override
 	public String toString() {
 		return "ConsumerProperties ["
@@ -322,7 +342,8 @@ public class ConsumerProperties {
 				+ (this.commitCallback != null ? ", commitCallback=" + this.commitCallback : "")
 				+ ", syncCommits=" + this.syncCommits
 				+ (this.syncCommitTimeout != null ? ", syncCommitTimeout=" + this.syncCommitTimeout : "")
-				+ (this.kafkaConsumerProperties.size() > 0 ? ", properties=" + this.kafkaConsumerProperties : "");
+				+ (this.kafkaConsumerProperties.size() > 0 ? ", properties=" + this.kafkaConsumerProperties : ""
+				+ ", authorizationExceptionRetryInterval=" + this.authorizationExceptionRetryInterval);
 	}
 
 	private String renderTopics() {
