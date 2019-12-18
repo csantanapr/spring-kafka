@@ -451,7 +451,7 @@ public abstract class AbstractMessageListenerContainer<K, V>
 	 * @return the {@link ConsumerRebalanceListener} currently assigned to this container.
 	 */
 	protected final ConsumerRebalanceListener createSimpleLoggingConsumerRebalanceListener() {
-		return new ConsumerRebalanceListener() {
+		return new ConsumerRebalanceListener() { // NOSONAR - anonymous inner class length
 
 			@Override
 			public void onPartitionsRevoked(Collection<TopicPartition> partitions) {

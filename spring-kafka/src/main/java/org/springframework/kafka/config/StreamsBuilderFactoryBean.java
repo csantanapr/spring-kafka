@@ -137,7 +137,7 @@ public class StreamsBuilderFactoryBean extends AbstractFactoryBean<StreamsBuilde
 
 	@Nullable
 	public Properties getStreamsConfiguration() {
-		return this.properties;
+		return this.properties; // NOSONAR - inconsistent synchronization
 	}
 
 	public void setClientSupplier(KafkaClientSupplier clientSupplier) {
@@ -279,12 +279,6 @@ public class StreamsBuilderFactoryBean extends AbstractFactoryBean<StreamsBuilde
 	@Override
 	public synchronized boolean isRunning() {
 		return this.running;
-	}
-
-	private Properties propertiesFromConfigs(Map<String, Object> configs) {
-		Properties props = new Properties();
-		props.putAll(configs);
-		return props;
 	}
 
 }
