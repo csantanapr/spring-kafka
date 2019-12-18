@@ -17,7 +17,6 @@
 package org.springframework.kafka.config;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.LogFactory;
