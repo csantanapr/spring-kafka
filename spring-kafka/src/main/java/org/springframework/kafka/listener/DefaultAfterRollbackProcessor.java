@@ -156,7 +156,7 @@ public class DefaultAfterRollbackProcessor<K, V> extends FailedRecordProcessor i
 
 	/**
 	 * {@inheritDoc}
-	 * Set to true to and the container will run the
+	 * Set to true and the container will run the
 	 * {@link #process(List, Consumer, Exception, boolean)} method in a transaction and,
 	 * if a record is skipped and recovered, we will send its offset to the transaction.
 	 * Requires a {@link KafkaTemplate}.
