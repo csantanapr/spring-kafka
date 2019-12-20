@@ -161,7 +161,7 @@ public class DefaultAfterRollbackProcessor<K, V> extends FailedRecordProcessor i
 	 * if a record is skipped and recovered, we will send its offset to the transaction.
 	 * Requires a {@link KafkaTemplate}.
 	 * @param commitRecovered true to process in a transaction.
-	 * @since 2.2.5
+	 * @since 2.3
 	 * @see #isProcessInTransaction()
 	 * @see #process(List, Consumer, Exception, boolean)
 	 * @see #setKafkaTemplate(KafkaTemplate)
