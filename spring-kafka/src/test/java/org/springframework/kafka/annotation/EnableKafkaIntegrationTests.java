@@ -833,7 +833,8 @@ public class EnableKafkaIntegrationTests {
 			replies = KafkaTestUtils.getRecords(consumer);
 			assertThat(replies.count()).isGreaterThanOrEqualTo(1);
 			iterator = replies.iterator();
-			list = (List) iterator.next();
+			value = iterator.next().value();
+			list = (List) value;
 			assertThat(list).hasSize(1);
 			assertThat(list.get(0)).isEqualTo("BAR");
 		}
