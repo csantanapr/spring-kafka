@@ -47,7 +47,6 @@ public final class JacksonMimeTypeModule extends SimpleModule {
 	private static final class MimeTypeSerializer extends JsonSerializer<MimeType> {
 
 		MimeTypeSerializer() {
-			super();
 		}
 
 		@Override

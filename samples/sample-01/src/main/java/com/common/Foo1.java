@@ -26,7 +26,6 @@ public class Foo1 {
 	private String foo;
 
 	public Foo1() {
-		super();
 	}
 
 	public Foo1(String foo) {

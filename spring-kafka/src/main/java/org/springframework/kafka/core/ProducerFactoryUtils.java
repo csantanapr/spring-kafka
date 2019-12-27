@@ -44,7 +44,6 @@ public final class ProducerFactoryUtils {
 	public static final Duration DEFAULT_CLOSE_TIMEOUT = Duration.ofSeconds(5);
 
 	private ProducerFactoryUtils() {
-		super();
 	}
 
 	/**

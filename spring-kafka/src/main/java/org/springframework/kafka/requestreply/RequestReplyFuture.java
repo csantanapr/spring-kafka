@@ -38,7 +38,6 @@ public class RequestReplyFuture<K, V, R> extends SettableListenableFuture<Consum
 	private volatile ListenableFuture<SendResult<K, V>> sendFuture;
 
 	public RequestReplyFuture() {
-		super();
 	}
 
 	protected void setSendFuture(ListenableFuture<SendResult<K, V>> sendFuture) {

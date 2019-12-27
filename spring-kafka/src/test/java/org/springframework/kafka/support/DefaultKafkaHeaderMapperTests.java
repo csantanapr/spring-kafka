@@ -294,7 +294,6 @@ public class DefaultKafkaHeaderMapperTests {
 		private String field;
 
 		public Bar() {
-			super();
 		}
 
 		public Bar(String field) {

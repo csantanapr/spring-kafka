@@ -52,7 +52,6 @@ public class DelegatingDeserializer implements Deserializer<Object> {
 	 * {@link #SERIALIZATION_SELECTOR_CONFIG}.
 	 */
 	public DelegatingDeserializer() {
-		super();
 	}
 
 	/**

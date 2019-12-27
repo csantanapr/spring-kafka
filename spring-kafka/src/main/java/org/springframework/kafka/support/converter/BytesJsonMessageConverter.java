@@ -36,7 +36,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class BytesJsonMessageConverter extends JsonMessageConverter {
 
 	public BytesJsonMessageConverter() {
-		super();
 	}
 
 	public BytesJsonMessageConverter(ObjectMapper objectMapper) {

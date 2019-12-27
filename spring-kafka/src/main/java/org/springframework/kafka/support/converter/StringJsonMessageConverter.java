@@ -34,7 +34,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class StringJsonMessageConverter extends JsonMessageConverter {
 
 	public StringJsonMessageConverter() {
-		super();
 	}
 
 	public StringJsonMessageConverter(ObjectMapper objectMapper) {

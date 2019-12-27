@@ -48,7 +48,6 @@ public class RecoveringDeserializationExceptionHandler implements Deserializatio
 	private ConsumerRecordRecoverer recoverer;
 
 	public RecoveringDeserializationExceptionHandler() {
-		super();
 	}
 
 	public RecoveringDeserializationExceptionHandler(ConsumerRecordRecoverer recoverer) {

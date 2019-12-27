@@ -421,7 +421,6 @@ public class DefaultKafkaHeaderMapper extends AbstractKafkaHeaderMapper {
 		private String untrustedType;
 
 		public NonTrustedHeaderType() {
-			super();
 		}
 
 		NonTrustedHeaderType(byte[] headerValue, String untrustedType) { // NOSONAR

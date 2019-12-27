@@ -56,7 +56,6 @@ public class DelegatingSerializer implements Serializer<Object> {
 	 * {@link DelegatingSerializer#SERIALIZATION_SELECTOR_CONFIG}.
 	 */
 	public DelegatingSerializer() {
-		super();
 	}
 
 	/**

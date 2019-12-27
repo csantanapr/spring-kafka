@@ -2075,7 +2075,6 @@ public class EnableKafkaIntegrationTests {
 
 
 		public Foo() {
-			super();
 		}
 
 		public Foo(String bar) {
@@ -2098,7 +2097,6 @@ public class EnableKafkaIntegrationTests {
 		private String bar;
 
 		public Baz() {
-			super();
 		}
 
 		public Baz(String bar) {
@@ -2121,7 +2119,6 @@ public class EnableKafkaIntegrationTests {
 		private String bar;
 
 		public Qux() {
-			super();
 		}
 
 		public Qux(String bar) {

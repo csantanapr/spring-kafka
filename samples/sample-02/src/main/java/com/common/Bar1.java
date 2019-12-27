@@ -26,7 +26,6 @@ public class Bar1 {
 	public String bar;
 
 	public Bar1() {
-		super();
 	}
 
 	public Bar1(String bar) {

@@ -87,7 +87,6 @@ public class ErrorHandlingDeserializer2<T> implements Deserializer<T> {
 	private Function<FailedDeserializationInfo, T> failedDeserializationFunction;
 
 	public ErrorHandlingDeserializer2() {
-		super();
 	}
 
 	public ErrorHandlingDeserializer2(Deserializer<T> delegate) {

@@ -34,7 +34,6 @@ import org.springframework.kafka.support.converter.MessageConverter;
 class KafkaListenerEndpointAdapter implements KafkaListenerEndpoint {
 
 	KafkaListenerEndpointAdapter() {
-		super();
 	}
 
 	@Override

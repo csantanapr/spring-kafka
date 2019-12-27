@@ -858,7 +858,6 @@ public class KafkaListenerAnnotationBeanPostProcessor<K, V>
 		private final Map<String, Object> listeners = new HashMap<>();
 
 		ListenerScope() {
-			super();
 		}
 
 		public void addListener(String key, Object bean) {

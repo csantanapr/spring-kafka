@@ -2182,7 +2182,6 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 							? (ConsumerAwareRebalanceListener) this.userListener : null;
 
 			ListenerConsumerRebalanceListener() {
-				super();
 			}
 
 			@Override
@@ -2313,7 +2312,6 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 		private final class InitialOrIdleSeekCallback implements ConsumerSeekCallback {
 
 			InitialOrIdleSeekCallback() {
-				super();
 			}
 
 			@Override

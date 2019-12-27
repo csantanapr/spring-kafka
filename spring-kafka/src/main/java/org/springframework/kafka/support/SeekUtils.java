@@ -50,7 +50,6 @@ public final class SeekUtils {
 	public static final FixedBackOff DEFAULT_BACK_OFF = new FixedBackOff(0, DEFAULT_MAX_FAILURES - 1);
 
 	private SeekUtils() {
-		super();
 	}
 
 	/**

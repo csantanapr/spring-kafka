@@ -2725,7 +2725,6 @@ public class KafkaMessageListenerContainerTests {
 		private String bar;
 
 		public Foo() {
-			super();
 		}
 
 		public Foo(String bar) {
@@ -2752,7 +2751,6 @@ public class KafkaMessageListenerContainerTests {
 		private String bar;
 
 		public Foo1() {
-			super();
 		}
 
 		public Foo1(String bar) {
@@ -2779,7 +2777,6 @@ public class KafkaMessageListenerContainerTests {
 		private String baz;
 
 		public Bar() {
-			super();
 		}
 
 		public Bar(String baz) {
@@ -2808,7 +2805,6 @@ public class KafkaMessageListenerContainerTests {
 		private String baz;
 
 		public Bar1() {
-			super();
 		}
 
 		public Bar1(String baz) {

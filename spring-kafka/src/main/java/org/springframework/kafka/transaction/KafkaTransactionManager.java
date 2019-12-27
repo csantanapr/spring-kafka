@@ -234,7 +234,6 @@ public class KafkaTransactionManager<K, V> extends AbstractPlatformTransactionMa
 		private KafkaResourceHolder<K, V> resourceHolder;
 
 		KafkaTransactionObject() {
-			super();
 		}
 
 		public void setResourceHolder(KafkaResourceHolder<K, V> resourceHolder) {

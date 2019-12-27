@@ -28,7 +28,6 @@ public final class TransactionSupport {
 	private static final ThreadLocal<String> transactionIdSuffix = new ThreadLocal<>(); // NOSONAR
 
 	private TransactionSupport() {
-		super();
 	}
 
 	public static void setTransactionIdSuffix(String suffix) {

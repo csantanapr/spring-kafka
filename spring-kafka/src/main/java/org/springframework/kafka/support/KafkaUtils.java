@@ -92,7 +92,6 @@ public final class KafkaUtils {
 	}
 
 	private KafkaUtils() {
-		super();
 	}
 
 }

@@ -286,7 +286,6 @@ public class BatchListenerConversionTests {
 		public String bar;
 
 		public Foo() {
-			super();
 		}
 
 		public Foo(String bar) {

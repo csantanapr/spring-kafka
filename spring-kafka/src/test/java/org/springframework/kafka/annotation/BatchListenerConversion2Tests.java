@@ -171,7 +171,6 @@ public class BatchListenerConversion2Tests {
 		private String bar;
 
 		public Foo() {
-			super();
 		}
 
 		public Foo(String bar) {

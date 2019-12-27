@@ -43,7 +43,6 @@ import org.springframework.util.Assert;
 public final class ListenerUtils {
 
 	private ListenerUtils() {
-		super();
 	}
 
 	public static ListenerType determineListenerType(Object listener) {
