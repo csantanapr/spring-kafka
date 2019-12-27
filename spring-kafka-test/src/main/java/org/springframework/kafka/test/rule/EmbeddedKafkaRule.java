@@ -19,12 +19,11 @@ package org.springframework.kafka.test.rule;
 import java.util.Map;
 
 import org.junit.rules.ExternalResource;
-import org.junit.rules.TestRule;
 
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 
 /**
- * A {@link TestRule} wrapper around an {@link EmbeddedKafkaBroker}.
+ * A {@link org.junit.rules.TestRule} wrapper around an {@link EmbeddedKafkaBroker}.
  *
  * @author Artem Bilan
  *

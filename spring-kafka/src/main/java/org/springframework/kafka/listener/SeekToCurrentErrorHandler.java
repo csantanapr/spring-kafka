@@ -32,14 +32,10 @@ import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
 import org.springframework.kafka.support.SeekUtils;
-import org.springframework.kafka.support.serializer.DeserializationException;
 import org.springframework.lang.Nullable;
-import org.springframework.messaging.converter.MessageConversionException;
-import org.springframework.messaging.handler.invocation.MethodArgumentResolutionException;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.backoff.BackOff;
-import org.springframework.util.backoff.FixedBackOff;
 
 /**
  * An error handler that seeks to the current offset for each topic in the remaining
@@ -73,11 +69,12 @@ public class SeekToCurrentErrorHandler extends FailedRecordProcessor implements 
 	 * 'maxFailures' have occurred for a topic/partition/offset.
 	 * @param maxFailures the maxFailures; a negative value is treated as infinity.
 	 * @deprecated in favor of {@link #SeekToCurrentErrorHandler(BackOff)}.
-	 * <b>IMPORTANT</b> When using a {@link FixedBackOff}, the maxAttempts property
-	 * represents retries (one less than maxFailures). To retry indefinitely, use a
-	 * fixed or exponential {@link BackOff} configured appropriately.
-	 * To use the other constructor with the semantics of this one, with maxFailures
-	 * equal to 3, use {@code new SeekToCurrentErrorHandler(new FixedBackOff(0L, 2L)}.
+	 * <b>IMPORTANT</b> When using a
+	 * {@link org.springframework.util.backoff.FixedBackOff}, the maxAttempts property
+	 * represents retries (one less than maxFailures). To retry indefinitely, use a fixed
+	 * or exponential {@link BackOff} configured appropriately. To use the other
+	 * constructor with the semantics of this one, with maxFailures equal to 3, use
+	 * {@code new SeekToCurrentErrorHandler(new FixedBackOff(0L, 2L)}.
 	 * @since 2.2.1
 	 */
 	@Deprecated
@@ -112,11 +109,11 @@ public class SeekToCurrentErrorHandler extends FailedRecordProcessor implements 
 	 * @param recoverer the recoverer; if null, the default (logging) recoverer is used.
 	 * @param maxFailures the maxFailures; a negative value is treated as infinity.
 	 * @deprecated in favor of {@link #SeekToCurrentErrorHandler(BiConsumer, BackOff)}.
-	 * <b>IMPORTANT</b> When using a {@link FixedBackOff}, the maxAttempts property
-	 * represents retries (one less than maxFailures). To retry indefinitely, use a
-	 * fixed or exponential {@link BackOff} configured appropriately.
-	 * To use the other constructor with the semantics of this one, with maxFailures
-	 * equal to 3, use
+	 * <b>IMPORTANT</b> When using a
+	 * {@link org.springframework.util.backoff.FixedBackOff}, the maxAttempts property
+	 * represents retries (one less than maxFailures). To retry indefinitely, use a fixed
+	 * or exponential {@link BackOff} configured appropriately. To use the other
+	 * constructor with the semantics of this one, with maxFailures equal to 3, use
 	 * {@code new SeekToCurrentErrorHandler(recoverer, new FixedBackOff(0L, 2L)}.
 	 * @since 2.2
 	 */
@@ -155,9 +152,9 @@ public class SeekToCurrentErrorHandler extends FailedRecordProcessor implements 
 	 * (until exhaustion) or not. If not, we go straight to the recoverer. By default,
 	 * the following exceptions will not be retried:
 	 * <ul>
-	 * <li>{@link DeserializationException}</li>
-	 * <li>{@link MessageConversionException}</li>
-	 * <li>{@link MethodArgumentResolutionException}</li>
+	 * <li>{@link org.springframework.kafka.support.serializer.DeserializationException}</li>
+	 * <li>{@link org.springframework.messaging.converter.MessageConversionException}</li>
+	 * <li>{@link org.springframework.messaging.handler.invocation.MethodArgumentResolutionException}</li>
 	 * <li>{@link NoSuchMethodException}</li>
 	 * <li>{@link ClassCastException}</li>
 	 * </ul>

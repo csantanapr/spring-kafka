@@ -29,7 +29,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SeekUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.backoff.BackOff;
-import org.springframework.util.backoff.FixedBackOff;
 
 /**
  * Default implementation of {@link AfterRollbackProcessor}. Seeks all
@@ -66,11 +65,12 @@ public class DefaultAfterRollbackProcessor<K, V> extends FailedRecordProcessor i
 	 * 'maxFailures' have occurred for a topic/partition/offset.
 	 * @param maxFailures the maxFailures; a negative value is treated as infinity.
 	 * @deprecated in favor of {@link #DefaultAfterRollbackProcessor(BackOff)}.
-	 * <b>IMPORTANT</b> When using a {@link FixedBackOff}, the maxAttempts property
-	 * represents retries (one less than maxFailures). To retry indefinitely, use a
-	 * fixed or exponential {@link BackOff} configured appropriately.
-	 * To use the other constructor with the semantics of this one, with maxFailures
-	 * equal to 3, use {@code new DefaultAfterRollbackProcessor(new FixedBackOff(0L, 2L)}.
+	 * <b>IMPORTANT</b> When using a
+	 * {@link org.springframework.util.backoff.FixedBackOff}, the maxAttempts property
+	 * represents retries (one less than maxFailures). To retry indefinitely, use a fixed
+	 * or exponential {@link BackOff} configured appropriately. To use the other
+	 * constructor with the semantics of this one, with maxFailures equal to 3, use
+	 * {@code new DefaultAfterRollbackProcessor(new FixedBackOff(0L, 2L)}.
 	 * @since 2.2.1
 	 */
 	@Deprecated
@@ -105,11 +105,11 @@ public class DefaultAfterRollbackProcessor<K, V> extends FailedRecordProcessor i
 	 * @param recoverer the recoverer; if null, the default (logging) recoverer is used.
 	 * @param maxFailures the maxFailures; a negative value is treated as infinity.
 	 * @deprecated in favor of {@link #DefaultAfterRollbackProcessor(BackOff)}.
-	 * <b>IMPORTANT</b> When using a {@link FixedBackOff}, the maxAttempts property
-	 * represents retries (one less than maxFailures). To retry indefinitely, use a
-	 * fixed or exponential {@link BackOff} configured appropriately.
-	 * To use the other constructor with the semantics of this one, with maxFailures
-	 * equal to 3, use
+	 * <b>IMPORTANT</b> When using a
+	 * {@link org.springframework.util.backoff.FixedBackOff}, the maxAttempts property
+	 * represents retries (one less than maxFailures). To retry indefinitely, use a fixed
+	 * or exponential {@link BackOff} configured appropriately. To use the other
+	 * constructor with the semantics of this one, with maxFailures equal to 3, use
 	 * {@code new DefaultAfterRollbackProcessor(recoverer, new FixedBackOff(0L, 2L)}.
 	 * @since 2.2
 	 */
