@@ -115,10 +115,7 @@ public class EmbeddedKafkaCondition implements ExecutionCondition, AfterAllCallb
 	@SuppressWarnings("unchecked")
 	private EmbeddedKafkaBroker createBroker(EmbeddedKafka embedded) {
 		EmbeddedKafkaBroker broker;
-		int[] ports = embedded.ports();
-		if (embedded.count() > 1 && ports.length == 1 && ports[0] == 0) {
-			ports = new int[embedded.count()];
-		}
+		int[] ports = setupPorts(embedded);
 		broker = new EmbeddedKafkaBroker(embedded.count(), embedded.controlledShutdown(), embedded.topics())
 				.zkPort(embedded.zookeeperPort())
 				.kafkaPorts(ports);
@@ -160,6 +157,14 @@ public class EmbeddedKafkaCondition implements ExecutionCondition, AfterAllCallb
 		}
 		broker.afterPropertiesSet();
 		return broker;
+	}
+
+	private int[] setupPorts(EmbeddedKafka embedded) {
+		int[] ports = embedded.ports();
+		if (embedded.count() > 1 && ports.length == 1 && ports[0] == 0) {
+			ports = new int[embedded.count()];
+		}
+		return ports;
 	}
 
 	private EmbeddedKafkaBroker getBrokerFromStore(ExtensionContext context) {

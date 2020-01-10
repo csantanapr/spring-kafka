@@ -66,10 +66,7 @@ class EmbeddedKafkaContextCustomizer implements ContextCustomizer {
 						.map(environment::resolvePlaceholders)
 						.toArray(String[]::new);
 
-		int[] ports = this.embeddedKafka.ports();
-		if (this.embeddedKafka.count() > 1 && ports.length == 1 && ports[0] == 0) {
-			ports = new int[this.embeddedKafka.count()];
-		}
+		int[] ports = setupPorts();
 		EmbeddedKafkaBroker embeddedKafkaBroker = new EmbeddedKafkaBroker(this.embeddedKafka.count(),
 					this.embeddedKafka.controlledShutdown(),
 					this.embeddedKafka.partitions(),
@@ -116,6 +113,14 @@ class EmbeddedKafkaContextCustomizer implements ContextCustomizer {
 		beanFactory.initializeBean(embeddedKafkaBroker, EmbeddedKafkaBroker.BEAN_NAME);
 		beanFactory.registerSingleton(EmbeddedKafkaBroker.BEAN_NAME, embeddedKafkaBroker);
 		((DefaultSingletonBeanRegistry) beanFactory).registerDisposableBean(EmbeddedKafkaBroker.BEAN_NAME, embeddedKafkaBroker);
+	}
+
+	private int[] setupPorts() {
+		int[] ports = this.embeddedKafka.ports();
+		if (this.embeddedKafka.count() > 1 && ports.length == 1 && ports[0] == 0) {
+			ports = new int[this.embeddedKafka.count()];
+		}
+		return ports;
 	}
 
 	@Override
