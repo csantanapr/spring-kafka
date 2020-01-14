@@ -154,7 +154,7 @@ public class StreamsBuilderFactoryBean extends AbstractFactoryBean<StreamsBuilde
 	 */
 	public void setInfrastructureCustomizer(KafkaStreamsInfrastructureCustomizer infrastructureCustomizer) {
 		Assert.notNull(infrastructureCustomizer, "'infrastructureCustomizer' must not be null");
-		this.infrastructureCustomizer = infrastructureCustomizer;
+		this.infrastructureCustomizer = infrastructureCustomizer; // NOSONAR (sync)
 	}
 
 	/**
