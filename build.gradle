@@ -62,7 +62,7 @@ ext {
 	scalaVersion = '2.12'
 	springRetryVersion = '1.2.4.RELEASE'
 	springVersion = '5.2.2.RELEASE'
-	springDataCommonsVersion = '2.2.3.RELEASE'
+	springDataCommonsVersion = '2.2.4.RELEASE'
 
 	idPrefix = 'kafka'
 }
