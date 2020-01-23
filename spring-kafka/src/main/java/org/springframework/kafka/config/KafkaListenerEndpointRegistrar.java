@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 the original author or authors.
+ * Copyright 2014-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,17 @@
 package org.springframework.kafka.config;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.kafka.annotation.KafkaListenerAnnotationBeanPostProcessor;
 import org.springframework.lang.Nullable;
 import org.springframework.messaging.handler.annotation.support.MessageHandlerMethodFactory;
+import org.springframework.messaging.handler.invocation.HandlerMethodArgumentResolver;
 import org.springframework.util.Assert;
 import org.springframework.validation.Validator;
 
@@ -35,12 +39,15 @@ import org.springframework.validation.Validator;
  * @author Juergen Hoeller
  * @author Artem Bilan
  * @author Gary Russell
+ * @author Filip Halemba
  *
  * @see org.springframework.kafka.annotation.KafkaListenerConfigurer
  */
 public class KafkaListenerEndpointRegistrar implements BeanFactoryAware, InitializingBean {
 
 	private final List<KafkaListenerEndpointDescriptor> endpointDescriptors = new ArrayList<>();
+
+	private List<HandlerMethodArgumentResolver> customMethodArgumentResolvers = new ArrayList<>();
 
 	private KafkaListenerEndpointRegistry endpointRegistry;
 
@@ -72,6 +79,25 @@ public class KafkaListenerEndpointRegistrar implements BeanFactoryAware, Initial
 	 */
 	public KafkaListenerEndpointRegistry getEndpointRegistry() {
 		return this.endpointRegistry;
+	}
+
+	/**
+	 * Return the list of {@link HandlerMethodArgumentResolver}.
+	 * @return the list of {@link HandlerMethodArgumentResolver}.
+	 * @since 2.4.2
+	 */
+	public List<HandlerMethodArgumentResolver> getCustomMethodArgumentResolvers() {
+		return Collections.unmodifiableList(this.customMethodArgumentResolvers);
+	}
+
+	/**
+	 * Add custom methods arguments resolvers to {@link KafkaListenerAnnotationBeanPostProcessor}
+	 * Default empty list.
+	 * @param methodArgumentResolvers the methodArgumentResolvers to assign.
+	 * @since 2.4.2
+	 */
+	public void setCustomMethodArgumentResolvers(HandlerMethodArgumentResolver... methodArgumentResolvers) {
+		this.customMethodArgumentResolvers = Arrays.asList(methodArgumentResolvers);
 	}
 
 	/**

@@ -3157,6 +3157,41 @@ This lets you further customize listener deserialization without changing the de
 
 IMPORTANT: Setting a custom `MessageHandlerMethodFactory` on the `KafkaListenerEndpointRegistrar` through a `KafkaListenerConfigurer` bean disables this feature.
 
+===== Adding custom `HandlerMethodArgumentResolver` to `@KafkaListener`
+
+Starting with version 2.4.2 you are able to add your own `HandlerMethodArgumentResolver` and resolve custom method parameters.
+All you need is to implement `KafkaListenerConfigurer` and use method `setCustomMethodArgumentResolvers()` from class `KafkaListenerEndpointRegistrar`.
+
+====
+[source, java]
+----
+@Configuration
+class CustomKafkaConfig implements KafkaListenerConfigurer {
+
+    @Override
+    public void configureKafkaListeners(KafkaListenerEndpointRegistrar registrar) {
+        registrar.setCustomMethodArgumentResolvers(
+            new HandlerMethodArgumentResolver() {
+
+                @Override
+                public boolean supportsParameter(MethodParameter parameter) {
+                    return CustomMethodArgument.class.isAssignableFrom(parameter.getParameterType());
+                }
+
+                @Override
+                public Object resolveArgument(MethodParameter parameter, Message<?> message) {
+                    return new CustomMethodArgument(
+                        message.getHeaders().get(KafkaHeaders.RECEIVED_TOPIC, String.class)
+                    );
+                }
+            }
+        );
+    }
+
+}
+----
+====
+
 [[headers]]
 ==== Message Headers
 
