@@ -694,10 +694,10 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 				return true;
 			}
 			String autoOffsetReset = consumerProperties.getProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG);
-			return !this.autoCommit
-					&& (autoOffsetReset == null || autoOffsetReset.equals("latest"))
-					&& (AssignmentCommitOption.LATEST_ONLY.equals(this.autoCommitOption)
-							|| AssignmentCommitOption.LATEST_ONLY_NO_TX.equals(this.autoCommitOption));
+			boolean resetLatest = autoOffsetReset == null || autoOffsetReset.equals("latest");
+			boolean latestOnlyOption = AssignmentCommitOption.LATEST_ONLY.equals(this.autoCommitOption)
+					|| AssignmentCommitOption.LATEST_ONLY_NO_TX.equals(this.autoCommitOption);
+			return !this.autoCommit && resetLatest && latestOnlyOption;
 		}
 
 		private long obtainMaxPollInterval(Properties consumerProperties) {
