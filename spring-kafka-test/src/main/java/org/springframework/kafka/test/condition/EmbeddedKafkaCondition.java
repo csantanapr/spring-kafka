@@ -50,6 +50,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Gary Russell
  * @author Artem Bilan
+ * @author Pawel Lozinski
  *
  * @since 2.3
  *
@@ -118,7 +119,9 @@ public class EmbeddedKafkaCondition implements ExecutionCondition, AfterAllCallb
 		int[] ports = setupPorts(embedded);
 		broker = new EmbeddedKafkaBroker(embedded.count(), embedded.controlledShutdown(), embedded.topics())
 				.zkPort(embedded.zookeeperPort())
-				.kafkaPorts(ports);
+				.kafkaPorts(ports)
+				.zkConnectionTimeout(embedded.zkConnectionTimeout())
+				.zkSessionTimeout(embedded.zkSessionTimeout());
 		Properties properties = new Properties();
 
 		for (String pair : embedded.brokerProperties()) {
