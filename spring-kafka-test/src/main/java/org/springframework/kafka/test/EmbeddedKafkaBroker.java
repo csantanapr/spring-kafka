@@ -260,7 +260,7 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 	 * @return the {@link EmbeddedKafkaBroker}.
 	 * @since 2.4
 	 */
-	public EmbeddedKafkaBroker zkConnectionTimeout(int zkConnectionTimeout) {
+	public synchronized EmbeddedKafkaBroker zkConnectionTimeout(int zkConnectionTimeout) {
 		this.zkConnectionTimeout = zkConnectionTimeout;
 		return this;
 	}
@@ -271,7 +271,7 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 	 * @return the {@link EmbeddedKafkaBroker}.
 	 * @since 2.4
 	 */
-	public EmbeddedKafkaBroker zkSessionTimeout(int zkSessionTimeout) {
+	public synchronized EmbeddedKafkaBroker zkSessionTimeout(int zkSessionTimeout) {
 		this.zkSessionTimeout = zkSessionTimeout;
 		return this;
 	}
