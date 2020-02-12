@@ -58,10 +58,10 @@ ext {
 	log4jVersion = '2.12.1'
 	micrometerVersion = '1.3.2'
 	mockitoVersion = '3.0.0'
-	reactorVersion = 'Dysprosium-SR1'
+	reactorVersion = 'Dysprosium-SR4'
 	scalaVersion = '2.12'
-	springRetryVersion = '1.2.4.RELEASE'
-	springVersion = '5.2.2.RELEASE'
+	springRetryVersion = '1.2.5.RELEASE'
+	springVersion = '5.2.3.RELEASE'
 	springDataCommonsVersion = '2.2.4.RELEASE'
 
 	idPrefix = 'kafka'
