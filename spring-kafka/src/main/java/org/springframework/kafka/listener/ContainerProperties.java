@@ -445,10 +445,12 @@ public class ContainerProperties extends ConsumerProperties {
 	}
 
 	/**
-	 * Set the transaction manager to start a transaction; only {@link AckMode#RECORD} and
-	 * {@link AckMode#BATCH} (default) are supported with transactions.
+	 * Set the transaction manager to start a transaction; offsets are committed with
+	 * semantics equivalent to {@link AckMode#RECORD} and {@link AckMode#BATCH} depending
+	 * on the listener type (record or batch).
 	 * @param transactionManager the transaction manager.
 	 * @since 1.3
+	 * @see #setAckMode(AckMode)
 	 */
 	public void setTransactionManager(PlatformTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
