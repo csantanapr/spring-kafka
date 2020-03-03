@@ -11,9 +11,7 @@ plugins {
 }
 
 gradleEnterprise {
-	apply from: "$rootDir/gradle/build-scan-user-data.gradle"
 	buildScan {
-		captureTaskInputFiles = true
 		publishOnFailure()
 	}
 }
