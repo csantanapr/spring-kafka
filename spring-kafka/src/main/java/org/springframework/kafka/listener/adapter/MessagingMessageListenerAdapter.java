@@ -444,7 +444,7 @@ public abstract class MessagingMessageListenerAdapter<K, V> implements ConsumerS
 		}
 	}
 
-	private Message<?> checkHeaders(Object result, String topic, Object source) {
+	private Message<?> checkHeaders(Object result, String topic, Object source) { // NOSONAR (complexity)
 		Message<?> reply = (Message<?>) result;
 		MessageHeaders headers = reply.getHeaders();
 		boolean needsTopic = headers.get(KafkaHeaders.TOPIC) == null;

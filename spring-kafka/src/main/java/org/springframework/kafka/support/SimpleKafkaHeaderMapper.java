@@ -69,7 +69,7 @@ public class SimpleKafkaHeaderMapper extends AbstractKafkaHeaderMapper {
 	@Override
 	public void fromHeaders(MessageHeaders headers, Headers target) {
 		headers.forEach((key, value) -> {
-			if (key != KafkaHeaders.DELIVERY_ATTEMPT) {
+			if (!key.equals(KafkaHeaders.DELIVERY_ATTEMPT)) {
 				Object valueToAdd = headerValueToAddOut(key, value);
 				if (valueToAdd instanceof byte[] && matches(key, valueToAdd)) {
 					target.add(new RecordHeader(key, (byte[]) valueToAdd));

@@ -1733,7 +1733,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 				checkDeser(record, ErrorHandlingDeserializer2.KEY_DESERIALIZER_EXCEPTION_HEADER);
 			}
 			if (this.deliveryAttemptAware != null) {
-				byte[] buff = new byte[4];
+				byte[] buff = new byte[4]; // NOSONAR (magic #)
 				ByteBuffer bb = ByteBuffer.wrap(buff);
 				bb.putInt(this.deliveryAttemptAware
 						.deliveryAttempt(
