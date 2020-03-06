@@ -49,7 +49,6 @@ public interface BatchErrorHandler extends GenericErrorHandler<ConsumerRecords<?
 	 * @param consumer the consumer.
 	 * @param container the container.
 	 * @param invokeListener a callback to re-invoke the listener.
-	 * @throws InterruptedException if the thread is interrupted.
 	 * @since 2.3.7
 	 */
 	default void handle(Exception thrownException, ConsumerRecords<?, ?> data,
