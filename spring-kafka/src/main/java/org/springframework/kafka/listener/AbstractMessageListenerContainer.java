@@ -76,7 +76,7 @@ public abstract class AbstractMessageListenerContainer<K, V>
 
 	private final ContainerProperties containerProperties;
 
-	private final Object lifecycleMonitor = new Object();
+	protected final Object lifecycleMonitor = new Object(); // NOSONAR
 
 	private String beanName;
 
