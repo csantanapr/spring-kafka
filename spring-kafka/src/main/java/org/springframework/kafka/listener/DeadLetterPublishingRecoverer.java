@@ -167,7 +167,7 @@ public class DeadLetterPublishingRecoverer implements ConsumerRecordRecoverer {
 		else {
 			headers = deserEx.getHeaders();
 		}
-		enhanceHeaders(headers, record, exception);
+		enhanceHeaders(headers, record, exception); // NOSONAR headers are never null
 		ProducerRecord<Object, Object> outRecord = createProducerRecord(record, tp, headers,
 				deserEx == null ? null : deserEx.getData(), isKey);
 		KafkaOperations<Object, Object> kafkaTemplate = findTemplateForValue(outRecord.value());
