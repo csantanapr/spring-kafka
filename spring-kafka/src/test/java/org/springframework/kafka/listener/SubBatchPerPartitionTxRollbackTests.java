@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
  */
 @SpringJUnitConfig
 @DirtiesContext
-public class SubBatchPerPartitionTxTests {
+public class SubBatchPerPartitionTxRollbackTests {
 
 	private static final String CONTAINER_ID = "container";
 
@@ -90,7 +90,7 @@ public class SubBatchPerPartitionTxTests {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void threeTransactions() throws Exception {
+	public void abortSecondBatch() throws Exception {
 		assertThat(this.config.deliveryLatch.await(10, TimeUnit.SECONDS)).isTrue();
 		assertThat(this.config.pollLatch.await(10, TimeUnit.SECONDS)).isTrue();
 		this.registry.stop();
@@ -103,17 +103,20 @@ public class SubBatchPerPartitionTxTests {
 		offsets.put(new TopicPartition("foo", 0), new OffsetAndMetadata(2L));
 		inOrder.verify(this.producer).sendOffsetsToTransaction(offsets, CONTAINER_ID);
 		inOrder.verify(this.producer).commitTransaction();
-		offsets.clear();
-		offsets.put(new TopicPartition("foo", 1), new OffsetAndMetadata(2L));
 		inOrder.verify(this.producer).beginTransaction();
-		inOrder.verify(this.producer).sendOffsetsToTransaction(offsets, CONTAINER_ID);
-		inOrder.verify(this.producer).commitTransaction();
+		inOrder.verify(this.producer).abortTransaction();
+		inOrder.verify(this.consumer).seek(new TopicPartition("foo", 1), 0L);
 		offsets.clear();
 		offsets.put(new TopicPartition("foo", 2), new OffsetAndMetadata(2L));
 		inOrder.verify(this.producer).beginTransaction();
 		inOrder.verify(this.producer).sendOffsetsToTransaction(offsets, CONTAINER_ID);
 		inOrder.verify(this.producer).commitTransaction();
-		assertThat(this.config.contents).containsExactly("foo", "bar", "baz", "qux", "fiz", "buz");
+		offsets.clear();
+		offsets.put(new TopicPartition("foo", 1), new OffsetAndMetadata(2L));
+		inOrder.verify(this.producer).beginTransaction();
+		inOrder.verify(this.producer).sendOffsetsToTransaction(offsets, CONTAINER_ID);
+		inOrder.verify(this.producer).commitTransaction();
+		assertThat(this.config.contents).containsExactly("foo", "bar", "baz", "qux", "fiz", "buz", "baz", "qux");
 		assertThat(this.config.transactionSuffix).isNotNull();
 	}
 
@@ -129,11 +132,17 @@ public class SubBatchPerPartitionTxTests {
 
 		final CountDownLatch closeLatch = new CountDownLatch(1);
 
+		boolean failSecondBatch = true;
+
 		volatile String transactionSuffix;
 
 		@KafkaListener(id = CONTAINER_ID, topics = "foo")
 		public void foo(List<String> in) {
 			this.contents.addAll(in);
+			if (this.failSecondBatch && in.get(0).equals("baz")) {
+				this.failSecondBatch = false;
+				throw new RuntimeException("test");
+			}
 			this.deliveryLatch.countDown();
 			this.transactionSuffix = TransactionSupport.getTransactionIdSuffix();
 		}
@@ -170,12 +179,17 @@ public class SubBatchPerPartitionTxTests {
 			records1.put(topicPartition2, Arrays.asList(
 					new ConsumerRecord("foo", 2, 0L, 0L, TimestampType.NO_TIMESTAMP_TYPE, 0, 0, 0, null, "fiz"),
 					new ConsumerRecord("foo", 2, 1L, 0L, TimestampType.NO_TIMESTAMP_TYPE, 0, 0, 0, null, "buz")));
+			Map<TopicPartition, List<ConsumerRecord>> records2 = new LinkedHashMap<>(records1);
+			records2.remove(topicPartition0);
+			records2.remove(topicPartition2);
 			final AtomicInteger which = new AtomicInteger();
 			willAnswer(i -> {
 				this.pollLatch.countDown();
 				switch (which.getAndIncrement()) {
 					case 0:
 						return new ConsumerRecords(records1);
+					case 1:
+						return new ConsumerRecords(records2);
 					default:
 						try {
 							Thread.sleep(100);
