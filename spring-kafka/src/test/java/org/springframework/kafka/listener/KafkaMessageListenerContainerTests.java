@@ -68,6 +68,7 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.AuthorizationException;
+import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.junit.jupiter.api.BeforeAll;
@@ -2730,6 +2731,31 @@ public class KafkaMessageListenerContainerTests {
 
 		container.start();
 		assertThat(stopping.await(10, TimeUnit.SECONDS)).isTrue();
+		container.stop();
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
+	void testNotFatalErrorOnAuthorizationException() throws Exception {
+		ConsumerFactory<Integer, String> cf = mock(ConsumerFactory.class);
+		Consumer<Integer, String> consumer = mock(Consumer.class);
+		given(cf.createConsumer(eq("grp"), eq("clientId"), isNull(), any())).willReturn(consumer);
+		given(cf.getConfigurationProperties()).willReturn(new HashMap<>());
+		CountDownLatch latch = new CountDownLatch(2);
+		willAnswer(invoc -> {
+			latch.countDown();
+			throw new TopicAuthorizationException("test");
+		}).given(consumer).poll(any());
+
+		ContainerProperties containerProps = new ContainerProperties(topic1);
+		containerProps.setGroupId("grp");
+		containerProps.setClientId("clientId");
+		containerProps.setMessageListener((MessageListener) r -> { });
+		containerProps.setAuthorizationExceptionRetryInterval(Duration.ofMillis(100));
+		KafkaMessageListenerContainer<Integer, String> container =
+				new KafkaMessageListenerContainer<>(cf, containerProps);
+		container.start();
+		assertThat(latch.await(10, TimeUnit.SECONDS)).isTrue();
 		container.stop();
 	}
 
