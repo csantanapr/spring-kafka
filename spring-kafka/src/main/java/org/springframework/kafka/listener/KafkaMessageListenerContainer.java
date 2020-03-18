@@ -1263,12 +1263,10 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 
 					@Override
 					public void doInTransactionWithoutResult(TransactionStatus s) {
-						Producer producer = null;
 						if (ListenerConsumer.this.kafkaTxManager != null) {
-							producer = ((KafkaResourceHolder) TransactionSynchronizationManager
+							ListenerConsumer.this.producer = ((KafkaResourceHolder) TransactionSynchronizationManager
 									.getResource(ListenerConsumer.this.kafkaTxManager.getProducerFactory()))
 										.getProducer(); // NOSONAR nullable
-							ListenerConsumer.this.producer = producer;
 						}
 						RuntimeException aborted = doInvokeBatchListener(records, recordList);
 						if (aborted != null) {
@@ -1512,12 +1510,10 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 
 						@Override
 						public void doInTransactionWithoutResult(TransactionStatus s) {
-							Producer producer = null;
 							if (ListenerConsumer.this.kafkaTxManager != null) {
-								producer = ((KafkaResourceHolder) TransactionSynchronizationManager
+								ListenerConsumer.this.producer = ((KafkaResourceHolder) TransactionSynchronizationManager
 										.getResource(ListenerConsumer.this.kafkaTxManager.getProducerFactory()))
 												.getProducer(); // NOSONAR
-								ListenerConsumer.this.producer = producer;
 							}
 							RuntimeException aborted = doInvokeRecordListener(record, iterator);
 							if (aborted != null) {
