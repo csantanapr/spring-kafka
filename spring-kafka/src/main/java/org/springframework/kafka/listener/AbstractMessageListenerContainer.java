@@ -136,8 +136,9 @@ public abstract class AbstractMessageListenerContainer<K, V>
 		if (containerProperties.getAckTime() > 0) {
 			this.containerProperties.setAckTime(containerProperties.getAckTime());
 		}
-		if (containerProperties.getSubBatchPerPartition() != null) {
-			this.containerProperties.setSubBatchPerPartition(containerProperties.getSubBatchPerPartition());
+		Boolean subBatchPerPartition = containerProperties.getSubBatchPerPartition();
+		if (subBatchPerPartition != null) {
+			this.containerProperties.setSubBatchPerPartition(subBatchPerPartition);
 		}
 		if (this.containerProperties.getConsumerRebalanceListener() == null) {
 			this.containerProperties.setConsumerRebalanceListener(createSimpleLoggingConsumerRebalanceListener());
