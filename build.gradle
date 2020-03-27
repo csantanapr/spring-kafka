@@ -345,7 +345,7 @@ task('makePDF', type: org.asciidoctor.gradle.AsciidoctorTask) {
 	backends 'pdf'
 	sourceDir "$buildDir/asciidoc"
 	sources {
-		include 'index-single.adoc'
+		include 'index.adoc'
 	}
 	options doctype: 'book', eruby: 'erubis'
 	attributes 'icons': 'font',
@@ -443,6 +443,7 @@ task docsZip(type: Zip, dependsOn: [reference]) {
 
 	from ('build/asciidoc/pdf') {
 		include 'index.pdf'
+		rename 'index.pdf', 'spring-kafka-reference.pdf'
 		into 'reference/pdf'
 	}
 }
