@@ -17,7 +17,6 @@
 package org.springframework.kafka.core;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,8 +85,6 @@ public class KafkaTemplate<K, V> implements KafkaOperations<K, V>, ApplicationCo
 	private final ThreadLocal<Producer<K, V>> producers = new ThreadLocal<>();
 
 	private final Map<String, String> micrometerTags = new HashMap<>();
-
-	private final Map<String, Object> configOverrides;
 
 	private String beanName = "kafkaTemplate";
 
@@ -167,8 +164,7 @@ public class KafkaTemplate<K, V> implements KafkaOperations<K, V>, ApplicationCo
 		this.autoFlush = autoFlush;
 		this.transactional = producerFactory.transactionCapable();
 		this.micrometerEnabled = KafkaUtils.MICROMETER_PRESENT;
-		this.configOverrides = configOverrides == null ? Collections.emptyMap() : new HashMap<>(configOverrides);
-		this.customProducerFactory = this.configOverrides.size() > 0;
+		this.customProducerFactory = configOverrides != null && configOverrides.size() > 0;
 		if (this.customProducerFactory) {
 			Map<String, Object> configs = new HashMap<>(producerFactory.getConfigurationProperties());
 			configs.putAll(configOverrides);
