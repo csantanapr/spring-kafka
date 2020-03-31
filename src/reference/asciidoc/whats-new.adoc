@@ -1,6 +1,7 @@
-=== What's New in 2.4 Since 2.3
+=== What's New in 2.5 Since 2.4
 
 This section covers the changes made from version 2.4 to version 2.5.
+For changes in earlier version, see <<history>>.
 
 Also see <<new-in-sik>>.
 
@@ -8,7 +9,7 @@ Also see <<new-in-sik>>.
 ==== Delivery Attempts Header
 
 There is now an option to to add a header which tracks delivery attempts when using certain error handlers and after rollback processors.
-See <<>> for more information.
+See <<delivery-header>> for more information.
 
 [[x25-message-return]]
 ==== @KafkaListener Changes
