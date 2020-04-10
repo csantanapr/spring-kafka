@@ -739,9 +739,7 @@ public class DefaultKafkaProducerFactory<K, V> implements ProducerFactory<K, V>,
 							if (!this.cache.contains(this)
 									&& !this.cache.offer(this)) {
 								this.closed = true;
-								this.delegate.close(this.producerFailed instanceof TimeoutException
-										? CLOSE_TIMEOUT_AFTER_TX_TIMEOUT
-										: timeout);
+								this.delegate.close(timeout);
 							}
 						}
 					}
