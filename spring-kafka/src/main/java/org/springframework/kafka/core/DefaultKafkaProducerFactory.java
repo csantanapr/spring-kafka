@@ -502,15 +502,15 @@ public class DefaultKafkaProducerFactory<K, V> implements ProducerFactory<K, V>,
 
 		Producer<K, V> newProducer;
 		Map<String, Object> newProducerConfigs = new HashMap<>(this.configs);
-		newProducerConfigs.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, prefix + suffix);
+		String txId = prefix + suffix;
+		newProducerConfigs.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, txId);
 		if (this.clientIdPrefix != null) {
 			newProducerConfigs.put(ProducerConfig.CLIENT_ID_CONFIG,
 					this.clientIdPrefix + "-" + this.clientIdCounter.incrementAndGet());
 		}
 		newProducer = createRawProducer(newProducerConfigs);
 		newProducer.initTransactions();
-		return new CloseSafeProducer<>(newProducer, getCache(prefix), remover,
-				(String) newProducerConfigs.get(ProducerConfig.TRANSACTIONAL_ID_CONFIG), this.physicalCloseTimeout);
+		return new CloseSafeProducer<>(newProducer, getCache(prefix), remover, txId, this.physicalCloseTimeout);
 	}
 
 	protected Producer<K, V> createRawProducer(Map<String, Object> configs) {
@@ -601,7 +601,7 @@ public class DefaultKafkaProducerFactory<K, V> implements ProducerFactory<K, V>,
 			this(delegate, cache, removeConsumerProducer, null, closeTimeout);
 		}
 
-		CloseSafeProducer(Producer<K, V> delegate, BlockingQueue<CloseSafeProducer<K, V>> cache,
+		CloseSafeProducer(Producer<K, V> delegate, @Nullable BlockingQueue<CloseSafeProducer<K, V>> cache,
 				@Nullable Consumer<CloseSafeProducer<K, V>> removeProducer, @Nullable String txId,
 				Duration closeTimeout) {
 
