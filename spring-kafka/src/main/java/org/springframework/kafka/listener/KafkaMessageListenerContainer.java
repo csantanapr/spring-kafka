@@ -913,9 +913,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 		public void run() {
 			publishConsumerStartingEvent();
 			this.consumerThread = Thread.currentThread();
-			if (this.consumerSeekAwareListener != null) {
-				this.consumerSeekAwareListener.registerSeekCallback(this);
-			}
+			setupSeeks();
 			KafkaUtils.setConsumerGroupId(this.consumerGroupId);
 			this.count = 0;
 			this.last = System.currentTimeMillis();
@@ -968,6 +966,12 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 				}
 			}
 			wrapUp();
+		}
+
+		private void setupSeeks() {
+			if (this.consumerSeekAwareListener != null) {
+				this.consumerSeekAwareListener.registerSeekCallback(this);
+			}
 		}
 
 		private void initAssignedPartitions() {
