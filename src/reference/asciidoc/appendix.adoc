@@ -1,3 +1,5 @@
+////
+
 [[deps-for-24x]]
 == Override Spring Boot Dependencies to use Spring for Apache Kafka 2.4
 
@@ -24,13 +26,13 @@ When you use `spring-kafka-test` (version 2.4.x) with Spring Boot, you need to o
 <dependency>
     <groupId>org.apache.kafka</groupId>
     <artifactId>kafka-clients</artifactId>
-    <version>2.4.0</version>
+    <version>2.4.1</version>
 </dependency>
 
 <dependency>
     <groupId>org.apache.kafka</groupId>
     <artifactId>kafka-clients</artifactId>
-    <version>2.4.0</version>
+    <version>2.4.1</version>
     <classifier>test</classifier>
     <scope>test</scope>
 </dependency>
@@ -38,14 +40,14 @@ When you use `spring-kafka-test` (version 2.4.x) with Spring Boot, you need to o
 <dependency>
     <groupId>org.apache.kafka</groupId>
     <artifactId>kafka_2.12</artifactId>
-    <version>2.4.0</version>
+    <version>2.4.1</version>
     <scope>test</scope>
 </dependency>
 
 <dependency>
     <groupId>org.apache.kafka</groupId>
     <artifactId>kafka_2.12</artifactId>
-    <version>2.4.0</version>
+    <version>2.4.1</version>
     <classifier>test</classifier>
     <scope>test</scope>
 </dependency>
@@ -61,13 +63,13 @@ dependencies {
 
 	implementation 'org.springframework.kafka:spring-kafka:{project-version}'
 
-	implementation 'org.apache.kafka:kafka-clients:2.4.0'
+	implementation 'org.apache.kafka:kafka-clients:2.4.1'
 	testImplementation ('org.springframework.kafka:spring-kafka-test:{project-version}') {
 		exclude module: 'kafka_2.11'
 	}
-	testImplementation 'org.apache.kafka:kafka-clients:2.4.0:test'
-	testImplementation 'org.apache.kafka:kafka_2.12:2.4.0'
-	testImplementation 'org.apache.kafka:kafka_2.12:2.4.0:test'
+	testImplementation 'org.apache.kafka:kafka-clients:2.4.1:test'
+	testImplementation 'org.apache.kafka:kafka_2.12:2.4.1'
+	testImplementation 'org.apache.kafka:kafka_2.12:2.4.1:test'
 
 }
 ----
@@ -80,3 +82,5 @@ The test scope dependencies are only needed if you are using the embedded Kafka 
 == Change History
 
 include::./changes-since-1.0.adoc[]
+
+////
