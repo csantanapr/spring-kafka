@@ -60,6 +60,12 @@ See <<kafka-template>> for more information.
 A `RoutingKafkaTemplate` has now been provided.
 See <<routing-template>> for more information.
 
+[[x25-string-serializer]]
+==== Kafka String Serializer/Deserializer
+
+New `ToStringSerializer`/`StringDeserializer` s as well as an associated `SerDe` are now provided.
+See <<string-serde>> for more information.
+
 [[x25-testing]]
 ==== Testing Changes
 

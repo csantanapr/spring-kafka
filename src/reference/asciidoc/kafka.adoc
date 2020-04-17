@@ -3247,9 +3247,12 @@ constructors to accept `Serializer` and `Deserializer` instances for `keys` and 
 When you use this API, the `DefaultKafkaProducerFactory` and `DefaultKafkaConsumerFactory` also provide properties (through constructors or setter methods) to inject custom `Serializer` and `Deserializer` instances into the target `Producer` or `Consumer`.
 Also, you can pass in `Supplier<Serializer>` or `Supplier<Deserializer>` instances through constructors - these `Supplier` s are called on creation of each `Producer` or `Consumer`.
 
+[[string-serde]]
 ===== String serialization
 
-Since version 2.5, Spring Kafka provides `ToStringSerializer` and `ParseStringDeserializer` classes that uses String representation of entities. They relies on methods `toString` and `parse`:
+Since version 2.5, Spring Kafka provides `ToStringSerializer` and `ParseStringDeserializer` classes that uses String representation of entities.
+They rely on methods `toString` and some `Function<String>` or `BiFuntion<String, Headers>` to parse the String and populate properties of an instance.
+Usually, this would invoke some static method on the class, such as `parse`:
 
 ====
 [source, java]
@@ -3260,7 +3263,9 @@ ParseStringDeserializer<Thing> deserializer = new ParseStringDeserializer<>(Thin
 ----
 ====
 
-By default `ToStringSerializer` is configured to convey type information about serialized entity in record `Headers`. This information can be used by `ParseStringDeserializer` on the receiving side.
+By default, the `ToStringSerializer` is configured to convey type information about the serialized entity in the record `Headers`.
+You can disable this by setting the `addTypeInfo` property to false.
+This information can be used by `ParseStringDeserializer` on the receiving side.
 
 * `ToStringSerializer.ADD_TYPE_INFO_HEADERS` (default `true`): You can set it to `false` to disable this feature on the `ToStringSerializer` (sets the `addTypeInfo` property).
 
@@ -3281,7 +3286,9 @@ ParseStringDeserializer<Object> deserializer = new ParseStringDeserializer<>((st
 ----
 ====
 
-You can configure which encoding serializer/deserializer uses by `setCharset`. By default it is `UTF-8`.
+You can configure the `Charset` used to convert `String` to/from `byte[]` with the default being `UTF-8`.
+
+A `ToFromStringSerde` is also provided, for use with Kafka Streams.
 
 ===== JSON
 

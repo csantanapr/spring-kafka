@@ -33,17 +33,27 @@ import org.springframework.util.Assert;
  * @param <T> class of the entity, representing messages
  *
  * @author Alexei Klenin
+ * @author Gary Russell
  * @since 2.5
  */
 public class ParseStringDeserializer<T> implements Deserializer<T> {
 
 	private final BiFunction<String, Headers, T> parser;
-	protected Charset charset = StandardCharsets.UTF_8;
 
+	private Charset charset = StandardCharsets.UTF_8;
+
+	/**
+	 * Construct an instance with the supplied parser function.
+	 * @param parser the function.
+	 */
 	public ParseStringDeserializer(Function<String, T> parser) {
 		this.parser = (message, ignoredHeaders) -> parser.apply(message);
 	}
 
+	/**
+	 * Construct an instance with the supplied parser function.
+	 * @param parser the function.
+	 */
 	public ParseStringDeserializer(BiFunction<String, Headers, T> parser) {
 		this.parser = parser;
 	}
@@ -65,6 +75,22 @@ public class ParseStringDeserializer<T> implements Deserializer<T> {
 	public void setCharset(Charset charset) {
 		Assert.notNull(charset, "'charset' cannot be null");
 		this.charset = charset;
+	}
+
+	/**
+	 * Get the configured charset.
+	 * @return the charset.
+	 */
+	public Charset getCharset() {
+		return this.charset;
+	}
+
+	/**
+	 * Get the configured parser function.
+	 * @return the function.
+	 */
+	public BiFunction<String, Headers, T> getParser() {
+		return this.parser;
 	}
 
 }

@@ -33,6 +33,7 @@ import org.springframework.util.Assert;
  * @param <T> class of the entity, representing messages
  *
  * @author Alexei Klenin
+ * @author Gary Russell
  * @since 2.5
  */
 public class ToStringSerializer<T> implements Serializer<T> {
@@ -53,8 +54,10 @@ public class ToStringSerializer<T> implements Serializer<T> {
 	 */
 	public static final String VALUE_TYPE = "spring.message.value.type";
 
-	protected boolean addTypeInfo = true;
-	protected Charset charset = StandardCharsets.UTF_8;
+	private boolean addTypeInfo = true;
+
+	private Charset charset = StandardCharsets.UTF_8;
+
 	private String typeInfoHeader = VALUE_TYPE;
 
 	@Override
@@ -102,6 +105,10 @@ public class ToStringSerializer<T> implements Serializer<T> {
 		// No-op
 	}
 
+	/**
+	 * Get the addTypeInfo property.
+	 * @return the addTypeInfo
+	 */
 	public boolean isAddTypeInfo() {
 		return this.addTypeInfo;
 	}
@@ -121,6 +128,14 @@ public class ToStringSerializer<T> implements Serializer<T> {
 	public void setCharset(Charset charset) {
 		Assert.notNull(charset, "'charset' cannot be null");
 		this.charset = charset;
+	}
+
+	/**
+	 * Get the configured charset.
+	 * @return the charset.
+	 */
+	public Charset getCharset() {
+		return this.charset;
 	}
 
 }

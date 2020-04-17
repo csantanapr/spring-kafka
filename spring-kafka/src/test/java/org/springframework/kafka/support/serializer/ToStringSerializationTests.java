@@ -28,6 +28,12 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.kafka.support.serializer.testentities.DummyEntity;
 
+/**
+ *
+ * @author Alexei Klenin
+ * @author Gary Russell
+ * @since 2.5
+ */
 public class ToStringSerializationTests {
 
 	@Test
@@ -165,23 +171,8 @@ public class ToStringSerializationTests {
 	public void testSerialization_usingHeaders() {
 
 		/* Given */
-		ParseStringDeserializer<Object> deserializer = new ParseStringDeserializer<>((str, headers) -> {
-			byte[] header = headers.lastHeader(ToStringSerializer.VALUE_TYPE).value();
-			String entityType = new String(header);
-
-			if (entityType.contains("TestEntity")) {
-				return TestEntity.parse(str);
-			}
-			else if (entityType.contains("DummyEntity")) {
-				DummyEntity dummyEntity = new DummyEntity();
-				String[] tokens = str.split(":");
-				dummyEntity.stringValue = tokens[0];
-				dummyEntity.intValue = Integer.parseInt(tokens[1]);
-				return dummyEntity;
-			}
-
-			return null;
-		});
+		ParseStringDeserializer<Object> deserializer =
+				new ParseStringDeserializer<>(ToStringSerializationTests::parseWithHeaders);
 
 		byte[] data = "toto:123:true".getBytes();
 		Headers headers = new RecordHeaders();
@@ -232,9 +223,29 @@ public class ToStringSerializationTests {
 				.isNotEqualTo("tôtô");
 	}
 
+	public static Object parseWithHeaders(String str, Headers headers) {
+		byte[] header = headers.lastHeader(ToStringSerializer.VALUE_TYPE).value();
+		String entityType = new String(header);
+
+		if (entityType.contains("TestEntity")) {
+			return TestEntity.parse(str);
+		}
+		else if (entityType.contains("DummyEntity")) {
+			DummyEntity dummyEntity = new DummyEntity();
+			String[] tokens = str.split(":");
+			dummyEntity.stringValue = tokens[0];
+			dummyEntity.intValue = Integer.parseInt(tokens[1]);
+			return dummyEntity;
+		}
+		return null;
+	}
+
 	private static final class TestEntity {
+
 		String first;
+
 		int second;
+
 		boolean third;
 
 		TestEntity(String first, int second, boolean third) {
@@ -255,5 +266,7 @@ public class ToStringSerializationTests {
 			boolean third = Boolean.parseBoolean(tokens[2]);
 			return new TestEntity(first, second, third);
 		}
+
 	}
+
 }
