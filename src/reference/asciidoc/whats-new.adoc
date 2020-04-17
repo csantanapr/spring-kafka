@@ -5,6 +5,11 @@ For changes in earlier version, see <<history>>.
 
 Also see <<new-in-sik>>.
 
+[[x25-kafka-client]]
+==== Kafka Client Version
+
+This version requires the 2.5.0 `kafka-clients`.
+
 [[x25-delivery]]
 ==== Delivery Attempts Header
 
