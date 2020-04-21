@@ -169,7 +169,7 @@ stream.through(new JsonSerde<>(MyKeyType.class)
 ----
 ====
 
-==== Using `KafkaStreamsBrancher`
+==== Using `KafkaStreamBrancher`
 
 The `KafkaStreamBrancher` class introduces a more convenient way to build conditional branches on top of `KStream`.
 
@@ -194,7 +194,7 @@ The following example uses `KafkaStreamBrancher`:
 ====
 [source,java]
 ----
-new KafkaStreamsBrancher<String, String>()
+new KafkaStreamBrancher<String, String>()
    .branch((key, value) -> value.contains("A"), ks -> ks.to("A"))
    .branch((key, value) -> value.contains("B"), ks -> ks.to("B"))
    //default branch should not necessarily be defined in the end of the chain!

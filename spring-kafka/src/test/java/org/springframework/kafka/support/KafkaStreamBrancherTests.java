@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
  *
  * @since 2.2.4
  */
-class KafkaStreamsBrancherTests {
+class KafkaStreamBrancherTests {
 
 	@Test
 	@SuppressWarnings({ "unchecked", "rawtypes" })

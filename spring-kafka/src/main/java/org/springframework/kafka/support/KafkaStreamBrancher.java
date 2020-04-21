@@ -31,7 +31,7 @@ import org.apache.kafka.streams.kstream.Predicate;
  * Example of usage:
  * <pre>
  * {@code
- * new KafkaStreamsBrancher<String, String>()
+ * new KafkaStreamBrancher<String, String>()
  *    .branch((key, value) -> value.contains("A"), ks->ks.to("A"))
  *    .branch((key, value) -> value.contains("B"), ks->ks.to("B"))
  *    //default branch should not necessarily be defined in the end
