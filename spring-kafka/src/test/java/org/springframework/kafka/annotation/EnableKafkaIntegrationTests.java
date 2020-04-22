@@ -812,7 +812,6 @@ public class EnableKafkaIntegrationTests {
 					.functionCounter()
 					.count())
 						.isGreaterThan(0);
-			throw new RuntimeException();
 		}
 		catch (Exception e) {
 			logger.error(this.meterRegistry.getMeters()
