@@ -76,11 +76,10 @@ dependencies {
 ====
 
 The test scope dependencies are only needed if you are using the embedded Kafka broker in tests.
+////
 
 [appendix]
 [[history]]
 == Change History
 
 include::./changes-since-1.0.adoc[]
-
-////
