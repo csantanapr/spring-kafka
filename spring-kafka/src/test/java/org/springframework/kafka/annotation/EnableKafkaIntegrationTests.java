@@ -48,6 +48,8 @@ import javax.validation.Valid;
 import javax.validation.ValidationException;
 import javax.validation.constraints.Max;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -166,6 +168,8 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 public class EnableKafkaIntegrationTests {
 
 	private static final String DEFAULT_TEST_GROUP_ID = "testAnnot";
+
+	private static final Log logger = LogFactory.getLog(EnableKafkaIntegrationTests.class);
 
 	@Autowired
 	private EmbeddedKafkaBroker embeddedKafka;
@@ -794,19 +798,29 @@ public class EnableKafkaIntegrationTests {
 		assertThat(this.listener.keyLatch.await(30, TimeUnit.SECONDS)).isTrue();
 		assertThat(this.listener.convertedKey).isEqualTo("foo");
 		assertThat(this.config.intercepted).isTrue();
-		assertThat(this.meterRegistry.get("kafka.consumer.coordinator.join.total")
-				.tag("consumerTag", "bytesString")
-				.tag("spring.id", "bytesStringConsumerFactory.tag-0")
-				.functionCounter()
-				.count())
-					.isGreaterThan(0);
+		try {
+			assertThat(this.meterRegistry.get("kafka.consumer.coordinator.join.total")
+					.tag("consumerTag", "bytesString")
+					.tag("spring.id", "bytesStringConsumerFactory.tag-0")
+					.functionCounter()
+					.count())
+						.isGreaterThan(0);
 
-		assertThat(this.meterRegistry.get("kafka.producer.node.incoming.byte.total")
-				.tag("producerTag", "bytesString")
-				.tag("spring.id", "bytesStringProducerFactory.bsPF-1")
-				.functionCounter()
-				.count())
-					.isGreaterThan(0);
+			assertThat(this.meterRegistry.get("kafka.producer.node.incoming.byte.total")
+					.tag("producerTag", "bytesString")
+					.tag("spring.id", "bytesStringProducerFactory.bsPF-1")
+					.functionCounter()
+					.count())
+						.isGreaterThan(0);
+			throw new RuntimeException();
+		}
+		catch (Exception e) {
+			logger.error(this.meterRegistry.getMeters()
+					.stream()
+					.map(meter -> "\n" + meter.getId())
+					.collect(Collectors.toList()), e);
+			throw e;
+		}
 	}
 
 	@Test
