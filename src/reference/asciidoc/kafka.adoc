@@ -2799,7 +2799,7 @@ To enable this feature, simply add the listeners to your producer and consumer f
 public ConsumerFactory<String, String> myConsumerFactory() {
     Map<String, Object> configs = consumerConfigs();
     ...
-    DefaultKafkaConsumerFactory<byte[], String> cf = new DefaultKafkaConsumerFactory<>(configs);
+    DefaultKafkaConsumerFactory<String, String> cf = new DefaultKafkaConsumerFactory<>(configs);
     ...
     cf.setListener(new MicrometerConsumerListener<String, String>(meterRegistry(),
             Collections.singletonList(new ImmutableTag("customTag", "customTagValue"))));
@@ -2812,9 +2812,9 @@ public ProducerFactory<String, String> myProducerFactory() {
     Map<String, Object> configs = producerConfigs();
     configs.put(ProducerConfig.CLIENT_ID_CONFIG, "myClientId");
     ...
-    DefaultKafkaProducerFactory<byte[], String> pf = new DefaultKafkaProducerFactory<>(configs);
+    DefaultKafkaProducerFactory<String, String> pf = new DefaultKafkaProducerFactory<>(configs);
     ...
-    pf.setListener(new MicrometerProducerListener<byte[], String>(meterRegistry(),
+    pf.setListener(new MicrometerProducerListener<String, String>(meterRegistry(),
             Collections.singletonList(new ImmutableTag("customTag", "customTagValue"))));
     ...
     return pf;
