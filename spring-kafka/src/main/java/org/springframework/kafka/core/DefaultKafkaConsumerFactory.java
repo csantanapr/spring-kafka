@@ -261,10 +261,15 @@ public class DefaultKafkaConsumerFactory<K, V> implements ConsumerFactory<K, V>,
 		return kafkaConsumer;
 	}
 
+	/**
+	 * Create a Consumer.
+	 * @param configProps the configuration properties.
+	 * @return the consumer.
+	 * @since 2.5
+	 */
 	protected Consumer<K, V> createRawConsumer(Map<String, Object> configProps) {
-		Consumer<K, V> kafkaConsumer = new KafkaConsumer<>(configProps, this.keyDeserializerSupplier.get(),
+		return new KafkaConsumer<>(configProps, this.keyDeserializerSupplier.get(),
 				this.valueDeserializerSupplier.get());
-		return kafkaConsumer;
 	}
 
 	@SuppressWarnings("unchecked")

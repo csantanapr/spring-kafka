@@ -417,6 +417,8 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 
 	private final class ListenerConsumer implements SchedulingAwareRunnable, ConsumerSeekCallback {
 
+		private static final String ERROR_HANDLER_THREW_AN_EXCEPTION = "Error handler threw an exception";
+
 		private static final int SIXTY = 60;
 
 		private static final String UNCHECKED = "unchecked";
@@ -1435,11 +1437,11 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 					}
 				}
 				catch (KafkaException ke) {
-					ke.selfLog("Error handler threw an exception", this.logger);
+					ke.selfLog(ERROR_HANDLER_THREW_AN_EXCEPTION, this.logger);
 					return ke;
 				}
 				catch (RuntimeException ee) {
-					this.logger.error(ee, "Error handler threw an exception");
+					this.logger.error(ee, ERROR_HANDLER_THREW_AN_EXCEPTION);
 					return ee;
 				}
 				catch (Error er) { // NOSONAR
@@ -1741,11 +1743,11 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 					}
 				}
 				catch (KafkaException ke) {
-					ke.selfLog("Error handler threw an exception", this.logger);
+					ke.selfLog(ERROR_HANDLER_THREW_AN_EXCEPTION, this.logger);
 					return ke;
 				}
 				catch (RuntimeException ee) {
-					this.logger.error(ee, "Error handler threw an exception");
+					this.logger.error(ee, ERROR_HANDLER_THREW_AN_EXCEPTION);
 					return ee;
 				}
 				catch (Error er) { // NOSONAR

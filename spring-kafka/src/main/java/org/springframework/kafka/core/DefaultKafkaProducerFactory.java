@@ -570,7 +570,7 @@ public class DefaultKafkaProducerFactory<K, V> implements ProducerFactory<K, V>,
 	}
 
 	private CloseSafeProducer<K, V> doCreateTxProducer(String prefix, String suffix,
-			@Nullable BiPredicate<CloseSafeProducer<K, V>, Duration> remover) {
+			BiPredicate<CloseSafeProducer<K, V>, Duration> remover) {
 
 		Producer<K, V> newProducer;
 		Map<String, Object> newProducerConfigs = new HashMap<>(this.configs);
@@ -676,14 +676,14 @@ public class DefaultKafkaProducerFactory<K, V> implements ProducerFactory<K, V>,
 			this.closeTimeout = closeTimeout;
 			Map<MetricName, ? extends Metric> metrics = delegate.metrics();
 			Iterator<MetricName> metricIterator = metrics.keySet().iterator();
-			String clientId;
+			String id;
 			if (metricIterator.hasNext()) {
-				clientId = metricIterator.next().tags().get("client-id");
+				id = metricIterator.next().tags().get("client-id");
 			}
 			else {
-				clientId = "unknown";
+				id = "unknown";
 			}
-			this.clientId = factoryName + "." + clientId;
+			this.clientId = factoryName + "." + id;
 			LOGGER.debug(() -> "Created new Producer: " + this);
 		}
 
