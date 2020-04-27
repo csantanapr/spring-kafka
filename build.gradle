@@ -61,9 +61,9 @@ ext {
 	mockitoVersion = '3.0.0'
 	reactorVersion = 'Dysprosium-SR6'
 	scalaVersion = '2.12'
+	springDataCommonsVersion = '2.3.0.RC1'
 	springRetryVersion = '1.2.5.RELEASE'
 	springVersion = '5.2.5.RELEASE'
-	springDataCommonsVersion = '2.2.6.RELEASE'
 
 	idPrefix = 'kafka'
 }
