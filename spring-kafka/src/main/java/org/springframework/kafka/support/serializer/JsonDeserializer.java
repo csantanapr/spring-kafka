@@ -335,6 +335,10 @@ public class JsonDeserializer<T> implements Deserializer<T> {
 		if (configs.containsKey(REMOVE_TYPE_INFO_HEADERS)) {
 			this.removeTypeHeaders = Boolean.parseBoolean(configs.get(REMOVE_TYPE_INFO_HEADERS).toString());
 		}
+		setUpTypeMethod(configs, isKey);
+	}
+
+	private void setUpTypeMethod(Map<String, ?> configs, boolean isKey) {
 		if (isKey && configs.containsKey(KEY_TYPE_METHOD)) {
 			setUpTypeFuntion((String) configs.get(KEY_TYPE_METHOD));
 		}
