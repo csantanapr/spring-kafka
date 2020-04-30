@@ -448,11 +448,11 @@ task docsZip(type: Zip, dependsOn: [reference]) {
 		into 'api'
 	}
 
-	from ('build/asciidoc/html5') {
+	from ('build/docs/asciidoc') {
 		into 'reference/html'
 	}
 
-	from ('build/asciidoc/pdf') {
+	from ('build/docs/asciidocPdf') {
 		include 'index.pdf'
 		rename 'index.pdf', 'spring-kafka-reference.pdf'
 		into 'reference/pdf'
