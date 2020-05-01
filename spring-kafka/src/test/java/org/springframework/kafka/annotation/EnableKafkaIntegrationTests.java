@@ -56,6 +56,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.clients.consumer.OffsetCommitCallback;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -1910,21 +1911,24 @@ public class EnableKafkaIntegrationTests {
 			for (int i = 0; i < topicsHeader.size(); i++) {
 				this.latch17.countDown();
 				String inTopic = topicsHeader.get(i);
-				if ("annotated26".equals(inTopic) && consumer.committed(Collections.singleton(
-						new org.apache.kafka.common.TopicPartition(inTopic, partitionsHeader.get(i))))
-							.values()
-							.iterator()
-							.next()
-							.offset() == 1) {
-					this.latch18.countDown();
-				}
-				else if ("annotated27".equals(inTopic) && consumer.committed(Collections.singleton(
-						new org.apache.kafka.common.TopicPartition(inTopic, partitionsHeader.get(i))))
-							.values()
-							.iterator()
-							.next()
-							.offset() == 3) {
-					this.latch18.countDown();
+				Map<org.apache.kafka.common.TopicPartition, OffsetAndMetadata> committed = consumer.committed(
+						Collections.singleton(
+								new org.apache.kafka.common.TopicPartition(inTopic, partitionsHeader.get(i))));
+				if (committed.values().iterator().next() != null) {
+					if ("annotated26".equals(inTopic) && committed
+								.values()
+								.iterator()
+								.next()
+								.offset() == 1) {
+						this.latch18.countDown();
+					}
+					else if ("annotated27".equals(inTopic) && committed
+								.values()
+								.iterator()
+								.next()
+								.offset() == 3) {
+						this.latch18.countDown();
+					}
 				}
 			}
 		}
