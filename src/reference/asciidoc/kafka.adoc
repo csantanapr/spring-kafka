@@ -315,9 +315,11 @@ future.addCallback(new ListenableFutureCallback<SendResult<Integer, String>>() {
 `SendResult` has two properties, a `ProducerRecord` and `RecordMetadata`.
 See the Kafka API documentation for information about those objects.
 
+The `Throwable` in `onFailure` can be cast to a `KafkaProducerException`; its `producerRecord` property contains the failed record.
+
 If you wish to block the sending thread to await the result, you can invoke the future's `get()` method.
 You may wish to invoke `flush()` before waiting or, for convenience, the template has a constructor with an `autoFlush` parameter that causes the template to `flush()` on each send.
-Note, however, that flushing likely significantly reduces performance.
+Flushing is only needed if you have set the `linger.ms` producer property and want to immediately send a partial batch.
 
 ====== Examples
 
