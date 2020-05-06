@@ -2377,10 +2377,9 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 							+ "consumer paused again, so the initial poll() will never return any records");
 				}
 				ListenerConsumer.this.assignedPartitions.addAll(partitions);
-				if (ListenerConsumer.this.commitCurrentOnAssignment) {
-					if (!collectAndCommitIfNecessary(partitions)) {
-						return;
-					}
+				if (ListenerConsumer.this.commitCurrentOnAssignment
+						&& !collectAndCommitIfNecessary(partitions)) {
+					return;
 				}
 				if (ListenerConsumer.this.genericListener instanceof ConsumerSeekAware) {
 					seekPartitions(partitions, false);
