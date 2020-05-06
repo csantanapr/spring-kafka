@@ -176,7 +176,7 @@ subprojects { subproject ->
 	}
 
 	checkstyle {
-		configDirectory.set(file("src/checkstyle"))
+		configDirectory.set(rootProject.file("src/checkstyle"))
 		toolVersion = '8.24'
 	}
 
