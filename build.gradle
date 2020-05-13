@@ -48,23 +48,23 @@ ext {
 			files(grgit.status().unstaged.modified).filter{ f -> f.name.endsWith('.java') || f.name.endsWith('.kt') }
 	}
 
-	assertjVersion = '3.15.0'
+	assertjVersion = '3.16.1'
 	googleJsr305Version = '3.0.2'
 	hamcrestVersion = '2.2'
-	hibernateValidationVersion = '6.0.17.Final'
-	jacksonVersion = '2.10.3'
+	hibernateValidationVersion = '6.1.5.Final'
+	jacksonVersion = '2.11.0'
 	jaywayJsonPathVersion = '2.4.0'
-	junit4Version = '4.12'
-	junitJupiterVersion = '5.5.2'
+	junit4Version = '4.13'
+	junitJupiterVersion = '5.6.2'
 	kafkaVersion = '2.5.0'
-	log4jVersion = '2.12.1'
-	micrometerVersion = '1.5.0'
-	mockitoVersion = '3.0.0'
+	log4jVersion = '2.13.2'
+	micrometerVersion = '1.5.1'
+	mockitoVersion = '3.3.3'
 	reactorVersion = 'Dysprosium-SR7'
 	scalaVersion = '2.12'
-	springDataCommonsVersion = '2.3.0.RC2'
+	springDataCommonsVersion = '2.3.0.RELEASE'
 	springRetryVersion = '1.2.5.RELEASE'
-	springVersion = '5.2.5.RELEASE'
+	springVersion = '5.2.6.RELEASE'
 
 	idPrefix = 'kafka'
 }
