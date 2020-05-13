@@ -91,7 +91,7 @@ public class ConcurrentMessageListenerContainer<K, V> extends AbstractMessageLis
 	/**
 	 * Set to false to suppress adding a suffix to the child container's client.id when
 	 * the concurrency is only 1.
-	 * @param alwaysClientIdSuffix true to suppress.
+	 * @param alwaysClientIdSuffix false to suppress, true (default) to include.
 	 * @since 2.2.14
 	 */
 	public void setAlwaysClientIdSuffix(boolean alwaysClientIdSuffix) {
