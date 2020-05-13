@@ -84,6 +84,7 @@
 				org.junit.Assume.*,
 				org.junit.internal.matchers.ThrowableMessageMatcher.*,
 				org.hamcrest.CoreMatchers.*,
+				org.hamcrest.MatcherAssert.*,
 				org.hamcrest.Matchers.*,
 				org.mockito.Mockito.*,
 				org.mockito.BDDMockito.*,
