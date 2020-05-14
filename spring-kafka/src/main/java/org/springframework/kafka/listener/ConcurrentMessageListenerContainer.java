@@ -179,14 +179,8 @@ public class ConcurrentMessageListenerContainer<K, V> extends AbstractMessageLis
 			setRunning(true);
 
 			for (int i = 0; i < this.concurrency; i++) {
-				KafkaMessageListenerContainer<K, V> container;
-				if (topicPartitions == null) {
-					container = new KafkaMessageListenerContainer<>(this, this.consumerFactory, containerProperties);
-				}
-				else {
-					container = new KafkaMessageListenerContainer<>(this, this.consumerFactory,
-							containerProperties, partitionSubset(containerProperties, i));
-				}
+				KafkaMessageListenerContainer<K, V> container =
+						constructContainer(containerProperties, topicPartitions, i);
 				String beanName = getBeanName();
 				container.setBeanName((beanName != null ? beanName : "consumer") + "-" + i);
 				container.setApplicationContext(getApplicationContext());
@@ -211,6 +205,19 @@ public class ConcurrentMessageListenerContainer<K, V> extends AbstractMessageLis
 				this.containers.add(container);
 			}
 		}
+	}
+
+	private KafkaMessageListenerContainer<K, V> constructContainer(ContainerProperties containerProperties,
+			TopicPartitionOffset[] topicPartitions, int i) {
+		KafkaMessageListenerContainer<K, V> container;
+		if (topicPartitions == null) {
+			container = new KafkaMessageListenerContainer<>(this, this.consumerFactory, containerProperties);
+		}
+		else {
+			container = new KafkaMessageListenerContainer<>(this, this.consumerFactory,
+					containerProperties, partitionSubset(containerProperties, i));
+		}
+		return container;
 	}
 
 	private TopicPartitionOffset[] partitionSubset(ContainerProperties containerProperties, int i) {
