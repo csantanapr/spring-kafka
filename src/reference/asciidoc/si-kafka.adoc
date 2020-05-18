@@ -19,7 +19,7 @@ It provides the following components:
 * <<si-channels>>
 
 [[new-in-sik]]
-==== What's new in Spring Integration for Apache Kafka (version 3.3 - pre-release)
+==== What's new in Spring Integration for Apache Kafka (version 3.3)
 
 * <<si-channels>>
 
