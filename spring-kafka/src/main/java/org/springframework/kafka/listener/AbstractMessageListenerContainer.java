@@ -204,7 +204,7 @@ public abstract class AbstractMessageListenerContainer<K, V>
 	 * @return the error handler.
 	 * @since 2.2
 	 */
-	protected GenericErrorHandler<?> getGenericErrorHandler() {
+	public GenericErrorHandler<?> getGenericErrorHandler() {
 		return this.errorHandler;
 	}
 
