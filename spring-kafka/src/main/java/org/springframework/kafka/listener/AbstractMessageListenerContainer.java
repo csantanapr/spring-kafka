@@ -245,7 +245,12 @@ public abstract class AbstractMessageListenerContainer<K, V>
 		return this.phase;
 	}
 
-	protected AfterRollbackProcessor<? super K, ? super V> getAfterRollbackProcessor() {
+	/**
+	 * Return the currently configured {@link AfterRollbackProcessor}.
+	 * @return the after rollback processor.
+	 * @since 2.2.14
+	 */
+	public AfterRollbackProcessor<? super K, ? super V> getAfterRollbackProcessor() {
 		return this.afterRollbackProcessor;
 	}
 
