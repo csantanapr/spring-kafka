@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.kafka.clients.admin.NewTopic;
 
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -47,7 +48,7 @@ import com.common.Foo2;
 public class Application {
 
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+		SpringApplication.run(Application.class, args).close();
 	}
 
 	/*
@@ -81,6 +82,14 @@ public class Application {
 	@Bean
 	public NewTopic bars() {
 		return new NewTopic("bars", 1, (short) 1);
+	}
+
+	@Bean
+	public ApplicationRunner runner() {
+		return args -> {
+			System.out.println("Hit Enter to terminate...");
+			System.in.read();
+		};
 	}
 
 }
