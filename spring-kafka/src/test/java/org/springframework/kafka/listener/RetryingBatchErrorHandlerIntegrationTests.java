@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.event.ConsumerStoppedEvent;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
@@ -78,7 +79,7 @@ public class RetryingBatchErrorHandlerIntegrationTests {
 
 		Map<String, Object> senderProps = KafkaTestUtils.producerProps(embeddedKafka);
 		DefaultKafkaProducerFactory<Object, Object> pf = new DefaultKafkaProducerFactory<>(senderProps);
-		final KafkaTemplate<Object, Object> template = new KafkaTemplate<>(pf);
+		final KafkaOperations<Object, Object> template = new KafkaTemplate<>(pf);
 		final CountDownLatch latch = new CountDownLatch(3);
 		AtomicReference<List<ConsumerRecord<Integer, String>>> data = new AtomicReference<>();
 		containerProps.setMessageListener((BatchMessageListener<Integer, String>) records -> {
@@ -116,8 +117,7 @@ public class RetryingBatchErrorHandlerIntegrationTests {
 		});
 		container.start();
 
-		template.setDefaultTopic(topic1);
-		template.sendDefault(0, 0, "foo");
+		template.send(topic1, 0, 0, "foo");
 		assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
 		assertThat(data.get()).hasSize(1);
 		assertThat(data.get().iterator().next().value()).isEqualTo("foo");
@@ -145,7 +145,7 @@ public class RetryingBatchErrorHandlerIntegrationTests {
 
 		Map<String, Object> senderProps = KafkaTestUtils.producerProps(embeddedKafka);
 		DefaultKafkaProducerFactory<Object, Object> pf = new DefaultKafkaProducerFactory<>(senderProps);
-		final KafkaTemplate<Object, Object> template = new KafkaTemplate<>(pf);
+		final KafkaOperations<Object, Object> template = new KafkaTemplate<>(pf);
 		final CountDownLatch latch = new CountDownLatch(6);
 		AtomicReference<List<ConsumerRecord<Integer, String>>> data = new AtomicReference<>();
 		containerProps.setMessageListener((BatchMessageListener<Integer, String>) records -> {
@@ -187,8 +187,7 @@ public class RetryingBatchErrorHandlerIntegrationTests {
 		});
 		container.start();
 
-		template.setDefaultTopic(topic2);
-		template.sendDefault(0, 0, "foo");
+		template.send(topic2, 0, 0, "foo");
 		assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
 		assertThat(data.get()).hasSize(1);
 		assertThat(data.get().iterator().next().value()).isEqualTo("foo");

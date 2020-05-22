@@ -41,7 +41,6 @@ import org.mockito.ArgumentCaptor;
 
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaOperations.OperationsCallback;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.serializer.DeserializationException;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -56,7 +55,7 @@ public class DeadLetterPublishingRecovererTests {
 	@SuppressWarnings("unchecked")
 	@Test
 	void testTxNoTx() {
-		KafkaTemplate<?, ?> template = mock(KafkaTemplate.class);
+		KafkaOperations<?, ?> template = mock(KafkaOperations.class);
 		given(template.isTransactional()).willReturn(true);
 		given(template.inTransaction()).willReturn(false);
 		given(template.isAllowNonTransactional()).willReturn(true);
@@ -70,7 +69,7 @@ public class DeadLetterPublishingRecovererTests {
 	@SuppressWarnings("unchecked")
 	@Test
 	void testTxExisting() {
-		KafkaTemplate<?, ?> template = mock(KafkaTemplate.class);
+		KafkaOperations<?, ?> template = mock(KafkaOperations.class);
 		given(template.isTransactional()).willReturn(true);
 		given(template.inTransaction()).willReturn(true);
 		DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(template);
@@ -83,7 +82,7 @@ public class DeadLetterPublishingRecovererTests {
 	@SuppressWarnings("unchecked")
 	@Test
 	void testNonTx() {
-		KafkaTemplate<?, ?> template = mock(KafkaTemplate.class);
+		KafkaOperations<?, ?> template = mock(KafkaOperations.class);
 		given(template.isTransactional()).willReturn(false);
 		DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(template);
 		ConsumerRecord<String, String> record = new ConsumerRecord<>("foo", 0, 0L, "bar", "baz");
@@ -96,7 +95,7 @@ public class DeadLetterPublishingRecovererTests {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	void testTxNewTx() {
-		KafkaTemplate<?, ?> template = mock(KafkaTemplate.class);
+		KafkaOperations<?, ?> template = mock(KafkaOperations.class);
 		given(template.isTransactional()).willReturn(true);
 		given(template.inTransaction()).willReturn(false);
 		given(template.isAllowNonTransactional()).willReturn(false);

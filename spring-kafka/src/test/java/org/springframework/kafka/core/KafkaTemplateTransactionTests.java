@@ -324,8 +324,8 @@ public class KafkaTemplateTransactionTests {
 		given(pf.transactionCapable()).willReturn(true);
 		given(pf.createProducer(isNull())).willReturn(producer1).willReturn(producer2);
 
-		KafkaTemplate<Object, Object> template = spy(new KafkaTemplate<>(pf));
-		template.setDefaultTopic(STRING_KEY_TOPIC);
+		KafkaOperations<Object, Object> template = spy(new KafkaTemplate<>(pf));
+		((KafkaTemplate<Object, Object>) template).setDefaultTopic(STRING_KEY_TOPIC);
 
 		KafkaTransactionManager<Object, Object> tm = new KafkaTransactionManager<>(pf);
 

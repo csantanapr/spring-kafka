@@ -76,6 +76,7 @@ import org.springframework.core.log.LogAccessor;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.core.ProducerFactoryUtils;
@@ -603,7 +604,7 @@ public class TransactionalContainerTests {
 				new KafkaMessageListenerContainer<>(cf, containerProps);
 		container.setBeanName("testMaxFailures");
 		final CountDownLatch recoverLatch = new CountDownLatch(1);
-		final KafkaTemplate<Object, Object> dlTemplate = spy(new KafkaTemplate<>(pf));
+		final KafkaOperations<Object, Object> dlTemplate = spy(new KafkaTemplate<>(pf));
 		AtomicBoolean recovererShouldFail = new AtomicBoolean(true);
 		DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(dlTemplate) {
 
@@ -620,7 +621,7 @@ public class TransactionalContainerTests {
 		DefaultAfterRollbackProcessor<Object, Object> afterRollbackProcessor =
 				spy(new DefaultAfterRollbackProcessor<>(recoverer, new FixedBackOff(0L, 2L)));
 		afterRollbackProcessor.setCommitRecovered(true);
-		afterRollbackProcessor.setKafkaTemplate(dlTemplate);
+		afterRollbackProcessor.setKafkaOperations(dlTemplate);
 		container.setAfterRollbackProcessor(afterRollbackProcessor);
 		final CountDownLatch stopLatch = new CountDownLatch(1);
 		container.setApplicationEventPublisher(e -> {

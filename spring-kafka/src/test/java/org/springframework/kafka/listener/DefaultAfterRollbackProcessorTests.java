@@ -58,7 +58,7 @@ public class DefaultAfterRollbackProcessorTests {
 		@SuppressWarnings("unchecked")
 		KafkaTemplate<String, String> template = mock(KafkaTemplate.class);
 		given(template.isTransactional()).willReturn(true);
-		processor.setKafkaTemplate(template);
+		processor.setKafkaOperations(template);
 		processor.setCommitRecovered(true);
 		ConsumerRecord<String, String> record1 = new ConsumerRecord<>("foo", 0, 0L, "foo", "bar");
 		ConsumerRecord<String, String> record2 = new ConsumerRecord<>("foo", 1, 1L, "foo", "bar");

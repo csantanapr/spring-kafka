@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.event.ConsumerStoppedEvent;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
@@ -80,7 +81,7 @@ public class RecoveringBatchErrorHandlerIntegrationTests {
 
 		Map<String, Object> senderProps = KafkaTestUtils.producerProps(embeddedKafka);
 		DefaultKafkaProducerFactory<Object, Object> pf = new DefaultKafkaProducerFactory<>(senderProps);
-		final KafkaTemplate<Object, Object> template = new KafkaTemplate<>(pf);
+		final KafkaOperations<Object, Object> template = new KafkaTemplate<>(pf);
 		final CountDownLatch latch = new CountDownLatch(3);
 		List<ConsumerRecord<Integer, String>> data = new ArrayList<>();
 		containerProps.setMessageListener((BatchMessageListener<Integer, String>) records -> {
@@ -109,13 +110,12 @@ public class RecoveringBatchErrorHandlerIntegrationTests {
 		});
 		container.start();
 
-		template.setDefaultTopic(topic1);
-		template.sendDefault(0, 0, "foo");
-		template.sendDefault(0, 0, "bar");
-		template.sendDefault(0, 0, "baz");
-		template.sendDefault(0, 0, "qux");
-		template.sendDefault(0, 0, "fiz");
-		template.sendDefault(0, 0, "buz");
+		template.send(topic1, 0, 0, "foo");
+		template.send(topic1, 0, 0, "bar");
+		template.send(topic1, 0, 0, "baz");
+		template.send(topic1, 0, 0, "qux");
+		template.send(topic1, 0, 0, "fiz");
+		template.send(topic1, 0, 0, "buz");
 		assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
 		assertThat(data).hasSize(13);
 		assertThat(data)
@@ -148,7 +148,7 @@ public class RecoveringBatchErrorHandlerIntegrationTests {
 
 		Map<String, Object> senderProps = KafkaTestUtils.producerProps(embeddedKafka);
 		DefaultKafkaProducerFactory<Object, Object> pf = new DefaultKafkaProducerFactory<>(senderProps);
-		final KafkaTemplate<Object, Object> template = new KafkaTemplate<>(pf);
+		final KafkaOperations<Object, Object> template = new KafkaTemplate<>(pf);
 		final CountDownLatch latch = new CountDownLatch(4);
 		List<ConsumerRecord<Integer, String>> data = new ArrayList<>();
 		containerProps.setMessageListener((BatchMessageListener<Integer, String>) records -> {
@@ -188,13 +188,12 @@ public class RecoveringBatchErrorHandlerIntegrationTests {
 		});
 		container.start();
 
-		template.setDefaultTopic(topic2);
-		template.sendDefault(0, 0, "foo");
-		template.sendDefault(0, 0, "bar");
-		template.sendDefault(0, 0, "baz");
-		template.sendDefault(0, 0, "qux");
-		template.sendDefault(0, 0, "fiz");
-		template.sendDefault(0, 0, "buz");
+		template.send(topic2, 0, 0, "foo");
+		template.send(topic2, 0, 0, "bar");
+		template.send(topic2, 0, 0, "baz");
+		template.send(topic2, 0, 0, "qux");
+		template.send(topic2, 0, 0, "fiz");
+		template.send(topic2, 0, 0, "buz");
 		assertThat(latch.await(60, TimeUnit.SECONDS)).isTrue();
 		assertThat(data).hasSize(17);
 		assertThat(data)

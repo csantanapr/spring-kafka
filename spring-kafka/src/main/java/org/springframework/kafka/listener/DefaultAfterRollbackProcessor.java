@@ -25,6 +25,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 
+import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.util.backoff.BackOff;
@@ -47,7 +48,7 @@ import org.springframework.util.backoff.BackOff;
  */
 public class DefaultAfterRollbackProcessor<K, V> extends FailedRecordProcessor implements AfterRollbackProcessor<K, V> {
 
-	private KafkaTemplate<K, V> kafkaTemplate;
+	private KafkaOperations<K, V> kafkaTemplate;
 
 	/**
 	 * Construct an instance with the default recoverer which simply logs the record after
@@ -118,12 +119,12 @@ public class DefaultAfterRollbackProcessor<K, V> extends FailedRecordProcessor i
 	 * Set to true and the container will run the
 	 * {@link #process(List, Consumer, Exception, boolean)} method in a transaction and,
 	 * if a record is skipped and recovered, we will send its offset to the transaction.
-	 * Requires a {@link KafkaTemplate}.
+	 * Requires a {@link KafkaOperations}.
 	 * @param commitRecovered true to process in a transaction.
 	 * @since 2.3
 	 * @see #isProcessInTransaction()
 	 * @see #process(List, Consumer, Exception, boolean)
-	 * @see #setKafkaTemplate(KafkaTemplate)
+	 * @see #setKafkaOperations(KafkaOperations)
 	 */
 	@Override
 	public void setCommitRecovered(boolean commitRecovered) { // NOSONAR enhanced javadoc
@@ -133,12 +134,25 @@ public class DefaultAfterRollbackProcessor<K, V> extends FailedRecordProcessor i
 	/**
 	 * Set a {@link KafkaTemplate} to use to send the offset of a recovered record
 	 * to a transaction.
-	 * @param kafkaTemplate the template
+	 * @param kafkaTemplate the template.
 	 * @since 2.2.5
 	 * @see #setCommitRecovered(boolean)
+	 * @deprecated in favor of {@link #setKafkaOperations(KafkaOperations)}.
 	 */
+	@Deprecated
 	public void setKafkaTemplate(KafkaTemplate<K, V> kafkaTemplate) {
 		this.kafkaTemplate = kafkaTemplate;
+	}
+
+	/**
+	 * Set a {@link KafkaOperations} to use to send the offset of a recovered record
+	 * to a transaction.
+	 * @param kafkaOperations the operations.
+	 * @since 2.3.8
+	 * @see #setCommitRecovered(boolean)
+	 */
+	public void setKafkaOperations(KafkaOperations<K, V> kafkaOperations) {
+		this.kafkaTemplate = kafkaOperations;
 	}
 
 }

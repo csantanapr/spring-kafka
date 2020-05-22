@@ -222,7 +222,11 @@ public interface KafkaOperations<K, V> {
 	 * @since 2.5
 	 * @see Producer#sendOffsetsToTransaction(Map, ConsumerGroupMetadata)
 	 */
-	void sendOffsetsToTransaction(Map<TopicPartition, OffsetAndMetadata> offsets, ConsumerGroupMetadata groupMetadata);
+	default void sendOffsetsToTransaction(Map<TopicPartition, OffsetAndMetadata> offsets,
+			ConsumerGroupMetadata groupMetadata) {
+
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Return true if the implementation supports transactions (has a transaction-capable

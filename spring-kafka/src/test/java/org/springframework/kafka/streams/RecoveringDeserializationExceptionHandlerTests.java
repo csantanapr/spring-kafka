@@ -53,6 +53,7 @@ import org.springframework.kafka.config.KafkaStreamsConfiguration;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
@@ -176,7 +177,7 @@ public class RecoveringDeserializationExceptionHandlerTests {
 		}
 
 		@Bean
-		public KafkaTemplate<byte[], byte[]> template() {
+		public KafkaOperations<byte[], byte[]> template() {
 			KafkaTemplate<byte[], byte[]> kafkaTemplate = new KafkaTemplate<>(producerFactory(), true);
 			kafkaTemplate.setDefaultTopic("recoverer1");
 			return kafkaTemplate;
