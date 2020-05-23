@@ -148,7 +148,7 @@ public class DefaultAfterRollbackProcessor<K, V> extends FailedRecordProcessor i
 	 * Set a {@link KafkaOperations} to use to send the offset of a recovered record
 	 * to a transaction.
 	 * @param kafkaOperations the operations.
-	 * @since 2.3.8
+	 * @since 2.5.1
 	 * @see #setCommitRecovered(boolean)
 	 */
 	public void setKafkaOperations(KafkaOperations<K, V> kafkaOperations) {
