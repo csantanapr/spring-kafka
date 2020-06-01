@@ -61,7 +61,6 @@ import org.apache.kafka.common.errors.AuthorizationException;
 import org.apache.kafka.common.errors.FencedInstanceIdException;
 import org.apache.kafka.common.errors.ProducerFencedException;
 import org.apache.kafka.common.errors.RebalanceInProgressException;
-import org.apache.kafka.common.errors.RetriableException;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.header.internals.RecordHeader;
 
@@ -1330,7 +1329,8 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 
 		private void commitAsync(Map<TopicPartition, OffsetAndMetadata> commits, int retries) {
 			this.consumer.commitAsync(commits, (offsetsAttempted, exception) -> {
-				if (exception instanceof RetriableException && retries < this.containerProperties.getCommitRetries()) {
+				if (exception instanceof RetriableCommitFailedException
+						&& retries < this.containerProperties.getCommitRetries()) {
 					commitAsync(commits, retries + 1);
 				}
 				else {
