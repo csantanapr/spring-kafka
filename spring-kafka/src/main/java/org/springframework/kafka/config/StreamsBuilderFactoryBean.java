@@ -136,7 +136,7 @@ public class StreamsBuilderFactoryBean extends AbstractFactoryBean<StreamsBuilde
 	}
 
 	@Override
-	public void setBeanName(String name) {
+	public synchronized void setBeanName(String name) {
 		this.beanName = name;
 	}
 
