@@ -207,13 +207,13 @@ public class DefaultKafkaHeaderMapper extends AbstractKafkaHeaderMapper {
 	 */
 	public void addTrustedPackages(String... packagesToTrust) {
 		if (packagesToTrust != null) {
-			for (String whiteList : packagesToTrust) {
-				if ("*".equals(whiteList)) {
+			for (String trusted : packagesToTrust) {
+				if ("*".equals(trusted)) {
 					this.trustedPackages.clear();
 					break;
 				}
 				else {
-					this.trustedPackages.add(whiteList);
+					this.trustedPackages.add(trusted);
 				}
 			}
 		}
