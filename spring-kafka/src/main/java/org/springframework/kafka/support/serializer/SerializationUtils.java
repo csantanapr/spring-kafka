@@ -52,7 +52,7 @@ public final class SerializationUtils {
 	public static <P, T> BiFunction<P, Headers, T> propertyToMethodInvokingFunction(String methodProperty,
 			Class<P> payloadType, ClassLoader classLoader) {
 
-		int lastDotPosn = methodProperty.lastIndexOf(".");
+		int lastDotPosn = methodProperty.lastIndexOf('.');
 		Assert.state(lastDotPosn > 1,
 				"the method property needs to be a class name followed by the method name, separated by '.'");
 		BiFunction<P, Headers, T> function;

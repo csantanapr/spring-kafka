@@ -194,13 +194,14 @@ public class RecoveringBatchErrorHandler extends FailedRecordProcessor
 		}
 	}
 
-	private BatchListenerFailedException getBatchListenerFailedException(Throwable throwable) {
+	private BatchListenerFailedException getBatchListenerFailedException(Throwable throwableArg) {
 		if (throwable == null || throwable instanceof BatchListenerFailedException) {
 			return (BatchListenerFailedException) throwable;
 		}
 
 		BatchListenerFailedException target = null;
 
+		Throwable throwable = throwableArg;
 		Set<Throwable> checked = new HashSet<>();
 		while (throwable.getCause() != null && !checked.contains(throwable.getCause())) {
 			throwable = throwable.getCause();

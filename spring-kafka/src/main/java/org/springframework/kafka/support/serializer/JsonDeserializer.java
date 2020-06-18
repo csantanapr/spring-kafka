@@ -601,7 +601,7 @@ public class JsonDeserializer<T> implements Deserializer<T> {
 	}
 
 	private JsonTypeResolver buildTypeResolver(String methodProperty) {
-		int lastDotPosn = methodProperty.lastIndexOf(".");
+		int lastDotPosn = methodProperty.lastIndexOf('.');
 		Assert.state(lastDotPosn > 1,
 				"the method property needs to be a class name followed by the method name, separated by '.'");
 		Class<?> clazz;
