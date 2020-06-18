@@ -195,8 +195,8 @@ public class RecoveringBatchErrorHandler extends FailedRecordProcessor
 	}
 
 	private BatchListenerFailedException getBatchListenerFailedException(Throwable throwableArg) {
-		if (throwable == null || throwable instanceof BatchListenerFailedException) {
-			return (BatchListenerFailedException) throwable;
+		if (throwableArg == null || throwableArg instanceof BatchListenerFailedException) {
+			return (BatchListenerFailedException) throwableArg;
 		}
 
 		BatchListenerFailedException target = null;
