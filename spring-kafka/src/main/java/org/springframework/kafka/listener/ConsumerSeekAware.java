@@ -87,11 +87,11 @@ public interface ConsumerSeekAware {
 	interface ConsumerSeekCallback {
 
 		/**
-		 * When called from
+		 * Perform a seek operation. When called from
 		 * {@link ConsumerSeekAware#onPartitionsAssigned(Map, ConsumerSeekCallback)} or
 		 * from {@link ConsumerSeekAware#onIdleContainer(Map, ConsumerSeekCallback)}
 		 * perform the seek immediately on the consumer. When called from elsewhere,
-		 * queue a seek operation to the consumer. The queued seek will occur after any
+		 * queue the seek operation to the consumer. The queued seek will occur after any
 		 * pending offset commits. The consumer must be currently assigned the specified
 		 * partition.
 		 * @param topic the topic.
@@ -101,11 +101,11 @@ public interface ConsumerSeekAware {
 		void seek(String topic, int partition, long offset);
 
 		/**
-		 * When called from
+		 * Perform a seek to beginning operation. When called from
 		 * {@link ConsumerSeekAware#onPartitionsAssigned(Map, ConsumerSeekCallback)} or
 		 * from {@link ConsumerSeekAware#onIdleContainer(Map, ConsumerSeekCallback)}
 		 * perform the seek immediately on the consumer. When called from elsewhere, queue
-		 * a seekToBeginning operation to the consumer. The queued seek will occur after
+		 * the seek operation to the consumer. The queued seek will occur after
 		 * any pending offset commits. The consumer must be currently assigned the
 		 * specified partition.
 		 * @param topic the topic.
