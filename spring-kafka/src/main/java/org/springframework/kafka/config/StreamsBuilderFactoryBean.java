@@ -240,7 +240,7 @@ public class StreamsBuilderFactoryBean extends AbstractFactoryBean<StreamsBuilde
 	 * may be null if this {@link StreamsBuilderFactoryBean} hasn't been started.
 	 * @since 1.1.4
 	 */
-	public KafkaStreams getKafkaStreams() {
+	public synchronized KafkaStreams getKafkaStreams() {
 		return this.kafkaStreams;
 	}
 
