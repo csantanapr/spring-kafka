@@ -87,8 +87,13 @@ public interface ConsumerSeekAware {
 	interface ConsumerSeekCallback {
 
 		/**
-		 * Queue a seek operation to the consumer. The seek will occur after any pending
-		 * offset commits. The consumer must be currently assigned the specified partition.
+		 * When called from
+		 * {@link ConsumerSeekAware#onPartitionsAssigned(Map, ConsumerSeekCallback)} or
+		 * from {@link ConsumerSeekAware#onIdleContainer(Map, ConsumerSeekCallback)}
+		 * perform the seek immediately on the consumer. When called from elsewhere,
+		 * queue a seek operation to the consumer. The queued seek will occur after any
+		 * pending offset commits. The consumer must be currently assigned the specified
+		 * partition.
 		 * @param topic the topic.
 		 * @param partition the partition.
 		 * @param offset the offset (absolute).
@@ -96,7 +101,11 @@ public interface ConsumerSeekAware {
 		void seek(String topic, int partition, long offset);
 
 		/**
-		 * Queue a seekToBeginning operation to the consumer. The seek will occur after
+		 * When called from
+		 * {@link ConsumerSeekAware#onPartitionsAssigned(Map, ConsumerSeekCallback)} or
+		 * from {@link ConsumerSeekAware#onIdleContainer(Map, ConsumerSeekCallback)}
+		 * perform the seek immediately on the consumer. When called from elsewhere, queue
+		 * a seekToBeginning operation to the consumer. The queued seek will occur after
 		 * any pending offset commits. The consumer must be currently assigned the
 		 * specified partition.
 		 * @param topic the topic.
@@ -105,7 +114,11 @@ public interface ConsumerSeekAware {
 		void seekToBeginning(String topic, int partition);
 
 		/**
-		 * Queue a seekToBeginning operation to the consumer for each
+		 * Perform a seek to beginning operation. When called from
+		 * {@link ConsumerSeekAware#onPartitionsAssigned(Map, ConsumerSeekCallback)} or
+		 * from {@link ConsumerSeekAware#onIdleContainer(Map, ConsumerSeekCallback)}
+		 * perform the seek immediately on the consumer. When called from elsewhere,
+		 * queue the seek operation to the consumer for each
 		 * {@link TopicPartition}. The seek will occur after any pending offset commits.
 		 * The consumer must be currently assigned the specified partition(s).
 		 * @param partitions the {@link TopicPartition}s.
@@ -116,16 +129,25 @@ public interface ConsumerSeekAware {
 		}
 
 		/**
-		 * Queue a seekToEnd operation to the consumer. The seek will occur after any pending
-		 * offset commits. The consumer must be currently assigned the specified partition.
+		 * Perform a seek to end operation. When called from
+		 * {@link ConsumerSeekAware#onPartitionsAssigned(Map, ConsumerSeekCallback)} or
+		 * from {@link ConsumerSeekAware#onIdleContainer(Map, ConsumerSeekCallback)}
+		 * perform the seek immediately on the consumer. When called from elsewhere, queue
+		 * the seek operation to the consumer. The queued seek will occur after any
+		 * pending offset commits. The consumer must be currently assigned the specified
+		 * partition.
 		 * @param topic the topic.
 		 * @param partition the partition.
 		 */
 		void seekToEnd(String topic, int partition);
 
 		/**
-		 * Queue a seekToEnd operation to the consumer for each {@link TopicPartition}.
-		 * The seek will occur after any pending offset commits. The consumer must be
+		 * Perform a seek to end operation. When called from
+		 * {@link ConsumerSeekAware#onPartitionsAssigned(Map, ConsumerSeekCallback)} or
+		 * from {@link ConsumerSeekAware#onIdleContainer(Map, ConsumerSeekCallback)}
+		 * perform the seek immediately on the consumer. When called from elsewhere, queue
+		 * the seek operation to the consumer for each {@link TopicPartition}. The queued
+		 * seek(s) will occur after any pending offset commits. The consumer must be
 		 * currently assigned the specified partition(s).
 		 * @param partitions the {@link TopicPartition}s.
 		 * @since 2.3.4
@@ -135,20 +157,31 @@ public interface ConsumerSeekAware {
 		}
 
 		/**
-		 * Queue a seek to a position relative to the start or end of the current position.
+		 * Perform a seek relative to the start, end, or current position. When called
+		 * from {@link ConsumerSeekAware#onPartitionsAssigned(Map, ConsumerSeekCallback)}
+		 * or from {@link ConsumerSeekAware#onIdleContainer(Map, ConsumerSeekCallback)}
+		 * perform the seek immediately on the consumer. When called from elsewhere, queue
+		 * the seek operation. The queued seek will occur after any pending offset
+		 * commits. The consumer must be currently assigned the specified partition.
 		 * @param topic the topic.
 		 * @param partition the partition.
 		 * @param offset the offset; positive values are relative to the start, negative
 		 * values are relative to the end, unless toCurrent is true.
-		 * @param toCurrent true for the offset to be relative to the current position rather
-		 * than the beginning or end.
+		 * @param toCurrent true for the offset to be relative to the current position
+		 * rather than the beginning or end.
 		 * @since 2.3
 		 */
 		void seekRelative(String topic, int partition, long offset, boolean toCurrent);
 
 		/**
-		 * Seek to the first offset greater than or equal to the time stamp.
-		 * Use {@link #seekToTimestamp(Collection, long)} when seeking multiple partitions
+		 * Perform a seek to the first offset greater than or equal to the time stamp.
+		 * When called from
+		 * {@link ConsumerSeekAware#onPartitionsAssigned(Map, ConsumerSeekCallback)} or
+		 * from {@link ConsumerSeekAware#onIdleContainer(Map, ConsumerSeekCallback)}
+		 * perform the seek immediately on the consumer. When called from elsewhere, queue
+		 * the seek operation. The queued seek will occur after any pending offset
+		 * commits. The consumer must be currently assigned the specified partition. Use
+		 * {@link #seekToTimestamp(Collection, long)} when seeking multiple partitions
 		 * because the offset lookup is blocking.
 		 * @param topic the topic.
 		 * @param partition the partition.
@@ -159,7 +192,13 @@ public interface ConsumerSeekAware {
 		void seekToTimestamp(String topic, int partition, long timestamp);
 
 		/**
-		 * Seek to the first offset greater than or equal to the time stamp.
+		 * Perform a seek to the first offset greater than or equal to the time stamp.
+		 * When called from
+		 * {@link ConsumerSeekAware#onPartitionsAssigned(Map, ConsumerSeekCallback)} or
+		 * from {@link ConsumerSeekAware#onIdleContainer(Map, ConsumerSeekCallback)}
+		 * perform the seek immediately on the consumer. When called from elsewhere, queue
+		 * the seek operation. The queued seek will occur after any pending offset
+		 * commits. The consumer must be currently assigned the specified partition.
 		 * @param topicPartitions the topic/partitions.
 		 * @param timestamp the time stamp.
 		 * @since 2.3
