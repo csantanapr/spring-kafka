@@ -133,7 +133,7 @@ private KafkaAdmin admin;
 
 ...
 
-    AdminClient client = AdminClient.create(admin.getConfig());
+    AdminClient client = AdminClient.create(admin.getConfigurationProperties());
     ...
     client.close();
 ----
@@ -549,7 +549,7 @@ public class KRequestingApplication {
     @Bean
     public ReplyingKafkaTemplate<String, String, String> replyingTemplate(
             ProducerFactory<String, String> pf,
-            ConcurrentMessageListenerContainer<Long, String> repliesContainer) {
+            ConcurrentMessageListenerContainer<String, String> repliesContainer) {
 
         return new ReplyingKafkaTemplate<>(pf, repliesContainer);
     }
