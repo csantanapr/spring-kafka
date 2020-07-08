@@ -62,7 +62,10 @@ import org.springframework.util.concurrent.SettableListenableFuture;
 
 
 /**
- * A template for executing high-level operations.
+ * A template for executing high-level operations. When used with a
+ * {@link DefaultKafkaProducerFactory}, the template is thread-safe. The producer factory
+ * and {@link org.apache.kafka.clients.producer.KafkaProducer} ensure this; refer to their
+ * respective javadocs.
  *
  * @param <K> the key type.
  * @param <V> the value type.
