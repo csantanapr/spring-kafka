@@ -125,5 +125,22 @@ public final class ListenerUtils {
 		}
 	}
 
+	/**
+	 * Return the {@link ConsumerRecord} as a String; either {@code toString()} or
+	 * {@code topic-partition@offset}.
+	 * @param record the record.
+	 * @param meta true to log just the metadata.
+	 * @return the rendered record.
+	 * @since 2.5.4
+	 */
+	public static String recordToString(ConsumerRecord<?, ?> record, boolean meta) {
+		if (meta) {
+			return record.topic() + "-" + record.partition() + "@" + record.offset();
+		}
+		else {
+			return record.toString();
+		}
+	}
+
 }
 
