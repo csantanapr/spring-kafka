@@ -4872,8 +4872,9 @@ There are two mechanisms to add more headers.
 
 1. Subclass the recoverer and override `createProducerRecord()` - call `super.createProducerRecord()` and add more headers.
 2. Provide a `BiFunction` to receive the consumer record and exception, returning a `Headers` object; headers from there will be copied to the final producer record.
+Use `setHeadersFunction()` to set the `BiFunction`.
 
-The second is simpler to implement but the first has more information, including the already assembled standard headers.
+The second is simpler to implement but the first has more information available, including the already assembled standard headers.
 
 Starting with version 2.3, when used in conjunction with an `ErrorHandlingDeserializer`, the publisher will restore the record `value()`, in the dead-letter producer record, to the original value that failed to be deserialized.
 Previously, the `value()` was null and user code had to decode the `DeserializationException` from the message headers.
