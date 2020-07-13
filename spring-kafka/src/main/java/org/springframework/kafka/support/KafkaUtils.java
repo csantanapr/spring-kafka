@@ -40,7 +40,7 @@ public final class KafkaUtils {
 	public static final boolean MICROMETER_PRESENT = ClassUtils.isPresent(
 			"io.micrometer.core.instrument.MeterRegistry", KafkaUtils.class.getClassLoader());
 
-	private static ThreadLocal<String> groupIds = new ThreadLocal<>();
+	private static final ThreadLocal<String> GROUP_IDS = new ThreadLocal<>();
 
 	/**
 	 * Return true if the method return type is {@link Message} or
@@ -78,7 +78,7 @@ public final class KafkaUtils {
 	 * @since 2.3
 	 */
 	public static void setConsumerGroupId(String groupId) {
-		KafkaUtils.groupIds.set(groupId);
+		KafkaUtils.GROUP_IDS.set(groupId);
 	}
 
 	/**
@@ -87,7 +87,7 @@ public final class KafkaUtils {
 	 * @since 2.3
 	 */
 	public static String getConsumerGroupId() {
-		return KafkaUtils.groupIds.get();
+		return KafkaUtils.GROUP_IDS.get();
 	}
 
 	/**
@@ -95,7 +95,7 @@ public final class KafkaUtils {
 	 * @since 2.3
 	 */
 	public static void clearConsumerGroupId() {
-		KafkaUtils.groupIds.remove();
+		KafkaUtils.GROUP_IDS.remove();
 	}
 
 	private KafkaUtils() {

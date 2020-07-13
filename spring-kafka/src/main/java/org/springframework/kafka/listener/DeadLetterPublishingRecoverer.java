@@ -53,8 +53,7 @@ import org.springframework.util.ObjectUtils;
  */
 public class DeadLetterPublishingRecoverer implements ConsumerRecordRecoverer {
 
-	private static final LogAccessor LOGGER =
-			new LogAccessor(LogFactory.getLog(DeadLetterPublishingRecoverer.class));
+	protected final LogAccessor logger = new LogAccessor(LogFactory.getLog(getClass())); // NOSONAR
 
 	private static final BiFunction<ConsumerRecord<?, ?>, Exception, TopicPartition>
 		DEFAULT_DESTINATION_RESOLVER = (cr, e) -> new TopicPartition(cr.topic() + ".DLT", cr.partition());
@@ -68,6 +67,8 @@ public class DeadLetterPublishingRecoverer implements ConsumerRecordRecoverer {
 	private final BiFunction<ConsumerRecord<?, ?>, Exception, TopicPartition> destinationResolver;
 
 	private boolean retainExceptionHeader;
+
+	private BiFunction<ConsumerRecord<?, ?>, Exception, Headers> headersFunction = (rec, ex) -> null;
 
 	/**
 	 * Create an instance with the provided template and a default destination resolving
@@ -182,15 +183,26 @@ public class DeadLetterPublishingRecoverer implements ConsumerRecordRecoverer {
 		this.retainExceptionHeader = retainExceptionHeader;
 	}
 
+	/**
+	 * Set a function which will be called to obtain additional headers to add to the
+	 * published record.
+	 * @param headersFunction the headers function.
+	 * @since 2.5.4
+	 */
+	public void setHeadersFunction(BiFunction<ConsumerRecord<?, ?>, Exception, Headers> headersFunction) {
+		Assert.notNull(headersFunction, "'headersFunction' cannot be null");
+		this.headersFunction = headersFunction;
+	}
+
 	@Override
 	public void accept(ConsumerRecord<?, ?> record, Exception exception) {
 		TopicPartition tp = this.destinationResolver.apply(record, exception);
 		boolean isKey = false;
 		DeserializationException deserEx = ListenerUtils.getExceptionFromHeader(record,
-				ErrorHandlingDeserializer.VALUE_DESERIALIZER_EXCEPTION_HEADER, LOGGER);
+				ErrorHandlingDeserializer.VALUE_DESERIALIZER_EXCEPTION_HEADER, this.logger);
 		if (deserEx == null) {
 			deserEx = ListenerUtils.getExceptionFromHeader(record,
-					ErrorHandlingDeserializer.KEY_DESERIALIZER_EXCEPTION_HEADER, LOGGER);
+					ErrorHandlingDeserializer.KEY_DESERIALIZER_EXCEPTION_HEADER, this.logger);
 			isKey = true;
 		}
 		Headers headers;
@@ -236,7 +248,7 @@ public class DeadLetterPublishingRecoverer implements ConsumerRecordRecoverer {
 		if (key.isPresent()) {
 			return (KafkaOperations<Object, Object>) this.templates.get(key.get());
 		}
-		LOGGER.warn(() -> "Failed to find a template for " + value.getClass() + " attempting to use the last entry");
+		this.logger.warn(() -> "Failed to find a template for " + value.getClass() + " attempting to use the last entry");
 		return (KafkaOperations<Object, Object>) this.templates.values()
 				.stream()
 				.reduce((first,  second) -> second)
@@ -276,13 +288,13 @@ public class DeadLetterPublishingRecoverer implements ConsumerRecordRecoverer {
 	protected void publish(ProducerRecord<Object, Object> outRecord, KafkaOperations<Object, Object> kafkaTemplate) {
 		try {
 			kafkaTemplate.send(outRecord).addCallback(result -> {
-				LOGGER.debug(() -> "Successful dead-letter publication: " + result);
+				this.logger.debug(() -> "Successful dead-letter publication: " + result);
 			}, ex -> {
-				LOGGER.error(ex, () -> "Dead-letter publication failed for: " + outRecord);
+				this.logger.error(ex, () -> "Dead-letter publication failed for: " + outRecord);
 			});
 		}
 		catch (Exception e) {
-			LOGGER.error(e, () -> "Dead-letter publication failed for: " + outRecord);
+			this.logger.error(e, () -> "Dead-letter publication failed for: " + outRecord);
 		}
 	}
 
@@ -306,6 +318,10 @@ public class DeadLetterPublishingRecoverer implements ConsumerRecordRecoverer {
 		}
 		kafkaHeaders.add(new RecordHeader(KafkaHeaders.DLT_EXCEPTION_STACKTRACE,
 				getStackTraceAsString(exception).getBytes(StandardCharsets.UTF_8)));
+		Headers headers = this.headersFunction.apply(record, exception);
+		if (headers != null) {
+			headers.forEach(header -> kafkaHeaders.add(header));
+		}
 	}
 
 	private String getStackTraceAsString(Throwable cause) {

@@ -4868,6 +4868,12 @@ The record sent to the dead-letter topic is enhanced with the following headers:
 * `KafkaHeaders.DLT_ORIGINAL_TIMESTAMP`: The original timestamp.
 * `KafkaHeaders.DLT_ORIGINAL_TIMESTAMP_TYPE`: The original timestamp type.
 
+There are two mechanisms to add more headers.
+
+1. Subclass the recoverer and override `createProducerRecord()` - call `super.createProducerRecord()` and add more headers.
+2. Provide a `BiFunction` to receive the consumer record and exception, returning a `Headers` object; headers from there will be copied to the final producer record.
+
+The second is simpler to implement but the first has more information, including the already assembled standard headers.
 
 Starting with version 2.3, when used in conjunction with an `ErrorHandlingDeserializer`, the publisher will restore the record `value()`, in the dead-letter producer record, to the original value that failed to be deserialized.
 Previously, the `value()` was null and user code had to decode the `DeserializationException` from the message headers.
@@ -4903,7 +4909,7 @@ By default, these headers are not retained in the message published to the dead 
 In that case, the `DLT_*` headers are based on the value deserialization and the key `DeserializationException` is retained in the header.
 
 [[kerberos]]
-==== Kerberos
+==== JAAS and Kerberos
 
 Starting with version 2.0, a `KafkaJaasLoginModuleInitializer` class has been added to assist with Kerberos configuration.
 You can add this bean, with the desired configuration, to your application context.

@@ -124,6 +124,9 @@ public class DeadLetterPublishingRecovererTests {
 		Headers headers = new RecordHeaders();
 		headers.add(new RecordHeader(ErrorHandlingDeserializer.VALUE_DESERIALIZER_EXCEPTION_HEADER, header(false)));
 		headers.add(new RecordHeader(ErrorHandlingDeserializer.KEY_DESERIALIZER_EXCEPTION_HEADER, header(true)));
+		Headers custom = new RecordHeaders();
+		custom.add(new RecordHeader("foo", "bar".getBytes()));
+		recoverer.setHeadersFunction((rec, ex) -> custom);
 		willReturn(new SettableListenableFuture<Object>()).given(template).send(any(ProducerRecord.class));
 		ConsumerRecord<String, String> record = new ConsumerRecord<>("foo", 0, 0L, 0L, TimestampType.CREATE_TIME,
 				0L, 0, 0, "bar", "baz", headers);
@@ -133,6 +136,7 @@ public class DeadLetterPublishingRecovererTests {
 		headers = captor.getValue().headers();
 		assertThat(headers.lastHeader(ErrorHandlingDeserializer.VALUE_DESERIALIZER_EXCEPTION_HEADER)).isNull();
 		assertThat(headers.lastHeader(ErrorHandlingDeserializer.KEY_DESERIALIZER_EXCEPTION_HEADER)).isNotNull();
+		assertThat(headers.lastHeader("foo")).isNotNull();
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
