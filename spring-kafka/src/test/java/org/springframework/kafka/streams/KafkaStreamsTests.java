@@ -36,7 +36,7 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Printed;
-import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.kstream.Repartitioned;
 import org.apache.kafka.streams.kstream.TimeWindows;
 import org.apache.kafka.streams.kstream.ValueMapper;
 import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
@@ -225,9 +225,7 @@ public class KafkaStreamsTests {
 			HeaderEnricher<Integer, String> enricher = new HeaderEnricher<>(headers);
 			stream.mapValues((ValueMapper<String, String>) String::toUpperCase)
 					.mapValues(Foo::new)
-					.through(FOOS, Produced.with(Serdes.Integer(), new JsonSerde<Foo>() {
-
-					}))
+					.repartition(Repartitioned.with(Serdes.Integer(), new JsonSerde<Foo>() { }))
 					.mapValues(Foo::getName)
 					.groupByKey()
 					.windowedBy(TimeWindows.of(Duration.ofMillis(1000)))

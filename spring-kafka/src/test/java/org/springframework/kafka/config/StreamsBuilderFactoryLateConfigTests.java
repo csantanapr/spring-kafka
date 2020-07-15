@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 the original author or authors.
+ * Copyright 2018-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.kafka.streams.StreamsConfig;
 import org.junit.jupiter.api.Test;
@@ -70,11 +71,12 @@ public class StreamsBuilderFactoryLateConfigTests {
 	}
 
 	@Test
-	public void testStreamsBuilderFactoryWithConfigProvidedLater() {
+	public void testStreamsBuilderFactoryWithConfigProvidedLater() throws Exception {
 		Properties props = new Properties();
 		props.put(StreamsConfig.APPLICATION_ID_CONFIG, APPLICATION_ID);
 		props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, this.brokerAddresses);
 		streamsBuilderFactoryBean.setStreamsConfiguration(props);
+		streamsBuilderFactoryBean.getObject().stream(Pattern.compile("foo"));
 
 		assertThat(streamsBuilderFactoryBean.isRunning()).isFalse();
 		streamsBuilderFactoryBean.start();

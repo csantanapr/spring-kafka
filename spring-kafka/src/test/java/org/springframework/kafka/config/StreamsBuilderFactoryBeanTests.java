@@ -26,9 +26,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.KTable;
+import org.apache.kafka.streams.kstream.Materialized;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
@@ -76,7 +80,6 @@ public class StreamsBuilderFactoryBeanTests {
 
 	@Test
 	public void testCleanupStreams() throws IOException {
-		Files.createDirectory(Paths.get(stateStoreDir.toString(), APPLICATION_ID));
 		Path stateStore = Files.createDirectory(Paths.get(stateStoreDir.toString(), APPLICATION_ID, "0_0"));
 		assertThat(stateStore).exists();
 		streamsBuilderFactoryBean.stop();
@@ -97,6 +100,8 @@ public class StreamsBuilderFactoryBeanTests {
 			}
 		};
 		streamsBuilderFactoryBean.afterPropertiesSet();
+		StreamsBuilder builder = streamsBuilderFactoryBean.getObject();
+		builder.stream(Pattern.compile("foo"));
 		streamsBuilderFactoryBean.start();
 		StreamsBuilder streamsBuilder = streamsBuilderFactoryBean.getObject();
 		verify(streamsBuilder).build(kafkaStreamsConfiguration.asProperties());
@@ -125,6 +130,13 @@ public class StreamsBuilderFactoryBeanTests {
 			return new KafkaStreamsConfiguration(props);
 		}
 
+		@Bean
+		public KTable<?, ?> table(StreamsBuilder builder) {
+			KStream<Object, Object> stream = builder.stream(Pattern.compile("foo"));
+			return stream.groupByKey()
+					.count(Materialized.as("store"));
+
+		}
 	}
 
 }
