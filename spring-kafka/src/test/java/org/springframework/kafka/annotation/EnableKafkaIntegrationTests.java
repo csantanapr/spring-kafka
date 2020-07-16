@@ -808,7 +808,7 @@ public class EnableKafkaIntegrationTests {
 					.count())
 						.isGreaterThan(0);
 
-			assertThat(this.meterRegistry.get("kafka.producer.node.incoming.byte.total")
+			assertThat(this.meterRegistry.get("kafka.producer.incoming.byte.total")
 					.tag("producerTag", "bytesString")
 					.tag("spring.id", "bytesStringProducerFactory.bsPF-1")
 					.functionCounter()
