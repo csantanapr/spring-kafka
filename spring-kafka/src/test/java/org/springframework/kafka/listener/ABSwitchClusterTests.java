@@ -41,6 +41,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.ABSwitchCluster;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 /**
@@ -49,6 +50,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
  *
  */
 @SpringJUnitConfig
+@DirtiesContext
 public class ABSwitchClusterTests {
 
 	@Test
@@ -69,6 +71,7 @@ public class ABSwitchClusterTests {
 		registry.start();
 		assertThat(config.latch.await(10, TimeUnit.SECONDS)).isTrue();
 		assertThat(config.props.get(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG)).isEqualTo("foo");
+		registry.stop();
 	}
 
 	@Configuration
