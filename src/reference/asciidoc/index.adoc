@@ -48,12 +48,6 @@ include::testing.adoc[]
 
 include::tips.adoc[]
 
-== Spring Integration
-
-This part of the reference guide shows how to use the `spring-integration-kafka` module of Spring Integration.
-
-include::si-kafka.adoc[]
-
 [[resources]]
 
 == Other Resources
