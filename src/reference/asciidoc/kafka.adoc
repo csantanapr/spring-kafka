@@ -19,7 +19,7 @@ To close existing Producers, call `reset()` on the `DefaultKafkaProducerFactory`
 To close existing Consumers, call `stop()` (and then `start()`) on the `KafkaListenerEndpointRegistry` and/or `stop()` and `start()` on any other listener container beans.
 
 For convenience, the framework also provides an `ABSwitchCluster` which supports two sets of bootstrap servers; one of which is active at any time.
-Configure the `ABSwitchCluster` and add it to the pruducer and consumer factories, and the `KafkaAdmin`, by calling `setBootstrapServersSupplier()`.
+Configure the `ABSwitchCluster` and add it to the producer and consumer factories, and the `KafkaAdmin`, by calling `setBootstrapServersSupplier()`.
 When you want to switch, call `primary()` or `secondary()` and call `reset()` on the producer factory to establish new connection(s); for consumers, `stop()` and `start()` all listener containers.
 When using `@KafkaListener` s, `stop()` and `start()` the `KafkaListenerEndpointRegistry` bean.
 
