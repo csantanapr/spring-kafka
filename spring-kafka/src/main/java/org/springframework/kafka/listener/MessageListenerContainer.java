@@ -81,16 +81,20 @@ public interface MessageListenerContainer extends SmartLifecycle {
 	}
 
 	/**
-	 * Pause this container before the next poll().
+	 * Pause this container before the next poll(). This is a thread-safe operation, the
+	 * actual pause is processed by the consumer thread.
 	 * @since 2.1.3
+	 * @see org.apache.kafka.clients.consumer.KafkaConsumer#pause(Collection)
 	 */
 	default void pause() {
 		throw new UnsupportedOperationException("This container doesn't support pause");
 	}
 
 	/**
-	 * Resume this container, if paused, after the next poll().
+	 * Resume this container, if paused, after the next poll(). This is a thread-safe
+	 * operation, the actual resume is processed by the consumer thread.
 	 * @since 2.1.3
+	 * @see org.apache.kafka.clients.consumer.KafkaConsumer#resume(Collection)
 	 */
 	default void resume() {
 		throw new UnsupportedOperationException("This container doesn't support resume");
