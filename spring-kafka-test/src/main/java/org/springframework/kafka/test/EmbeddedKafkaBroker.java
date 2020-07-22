@@ -91,6 +91,8 @@ import kafka.zookeeper.ZooKeeperClient;
  */
 public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 
+	private static final String BROKER_NEEDED = "Broker must be started before this method can be called";
+
 	private static final String LOOPBACK = "127.0.0.1";
 
 	private static final LogAccessor logger = new LogAccessor(LogFactory.getLog(EmbeddedKafkaBroker.class)); // NOSONAR
@@ -373,7 +375,7 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 	 * @param topicsToAdd the topics.
 	 */
 	public void addTopics(String... topicsToAdd) {
-		Assert.notNull(this.zookeeper, "Broker must be started before this method can be called");
+		Assert.notNull(this.zookeeper, BROKER_NEEDED);
 		HashSet<String> set = new HashSet<>(Arrays.asList(topicsToAdd));
 		createKafkaTopics(set);
 		this.topics.addAll(set);
@@ -386,7 +388,7 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 	 * @since 2.2
 	 */
 	public void addTopics(NewTopic... topicsToAdd) {
-		Assert.notNull(this.zookeeper, "Broker must be started before this method can be called");
+		Assert.notNull(this.zookeeper, BROKER_NEEDED);
 		for (NewTopic topic : topicsToAdd) {
 			Assert.isTrue(this.topics.add(topic.name()), () -> "topic already exists: " + topic);
 			Assert.isTrue(topic.replicationFactor() <= this.count
@@ -429,7 +431,7 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 	 * @since 2.5.4
 	 */
 	public Map<String, Exception> addTopicsWithResults(String... topicsToAdd) {
-		Assert.notNull(this.zookeeper, "Broker must be started before this method can be called");
+		Assert.notNull(this.zookeeper, BROKER_NEEDED);
 		HashSet<String> set = new HashSet<>(Arrays.asList(topicsToAdd));
 		this.topics.addAll(set);
 		return createKafkaTopicsWithResults(set);
@@ -443,7 +445,7 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 	 * @since 2.5.4
 	 */
 	public Map<String, Exception> addTopicsWithResults(NewTopic... topicsToAdd) {
-		Assert.notNull(this.zookeeper, "Broker must be started before this method can be called");
+		Assert.notNull(this.zookeeper, BROKER_NEEDED);
 		for (NewTopic topic : topicsToAdd) {
 			Assert.isTrue(this.topics.add(topic.name()), () -> "topic already exists: " + topic);
 			Assert.isTrue(topic.replicationFactor() <= this.count
