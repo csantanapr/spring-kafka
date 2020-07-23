@@ -506,8 +506,7 @@ public KafkaTemplate<Integer, CustomValue> kafkaTemplate() {
 ===== Using `ReplyingKafkaTemplate`
 
 Version 2.1.3 introduced a subclass of `KafkaTemplate` to provide request/reply semantics.
-The class is named `ReplyingKafkaTemplate` and has one method (in addition to those in the superclass).
-The following listing shows the method signatures:
+The class is named `ReplyingKafkaTemplate` and has two additional methods; the following shows the method signatures:
 
 ====
 [source, java]
