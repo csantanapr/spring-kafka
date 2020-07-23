@@ -890,23 +890,18 @@ This, together with an increased `session.timeout.ms`, can be used to reduce reb
 [[kafka-container]]
 ====== Using `KafkaMessageListenerContainer`
 
-The following constructors are available:
+The following constructor is available:
 
 ====
 [source, java]
 ----
 public KafkaMessageListenerContainer(ConsumerFactory<K, V> consumerFactory,
                     ContainerProperties containerProperties)
-
-KafkaMessageListenerContainer(ConsumerFactory<K, V> consumerFactory,
-                    ContainerProperties containerProperties,
-                    TopicPartitionOffset... topicPartitions)
 ----
 ====
 
-Each takes a `ConsumerFactory` and information about topics and partitions, as well as other configuration in a `ContainerProperties`
+It receives a `ConsumerFactory` and information about topics and partitions, as well as other configuration, in a `ContainerProperties`
 object.
-The second constructor is used by the `ConcurrentMessageListenerContainer` (<<using-ConcurrentMessageListenerContainer,described later>>) to distribute `TopicPartitionOffset` across the consumer instances.
 `ContainerProperties` has the following constructors:
 
 ====
@@ -988,7 +983,7 @@ NOTE: By default, no interval is configured - authorization errors are considere
 [[using-ConcurrentMessageListenerContainer]]
 ====== Using `ConcurrentMessageListenerContainer`
 
-The single constructor is similar to the first `KafkaListenerContainer` constructor.
+The single constructor is similar to the `KafkaListenerContainer` constructor.
 The following listing shows the constructor's signature:
 
 ====
@@ -996,7 +991,6 @@ The following listing shows the constructor's signature:
 ----
 public ConcurrentMessageListenerContainer(ConsumerFactory<K, V> consumerFactory,
                             ContainerProperties containerProperties)
-
 ----
 ====
 
@@ -1025,10 +1019,10 @@ org.apache.kafka.clients.consumer.RoundRobinAssignor
 =====
 ====
 
-For the second constructor, the `ConcurrentMessageListenerContainer` distributes the `TopicPartition` instances across the delegate `KafkaMessageListenerContainer` instances.
+When the container properties are configured with `TopicPartitionOffset` s, the `ConcurrentMessageListenerContainer` distributes the `TopicPartitionOffset` instances across the delegate `KafkaMessageListenerContainer` instances.
 
-If, say, six `TopicPartition` instances are provided and the `concurrency` is `3`; each container gets two partitions.
-For five `TopicPartition` instances, two containers get two partitions, and the third gets one.
+If, say, six `TopicPartitionOffset` instances are provided and the `concurrency` is `3`; each container gets two partitions.
+For five `TopicPartitionOffset` instances, two containers get two partitions, and the third gets one.
 If the `concurrency` is greater than the number of `TopicPartitions`, the `concurrency` is adjusted down such that each container gets one partition.
 
 NOTE: The `client.id` property (if set) is appended with `-n` where `n` is the consumer instance that corresponds to the concurrency.
