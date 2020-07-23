@@ -164,10 +164,10 @@ public class DefaultAfterRollbackProcessor<K, V> extends FailedRecordProcessor
 	}
 
 	/**
-	 * {@inheritDoc} Set to true and the container will run the {@link #process(List,
-	 * Consumer, Exception, boolean, EOSMode)} method in a transaction and, if a record
-	 * is skipped and recovered, we will send its offset to the transaction. Requires a
-	 * {@link KafkaOperations}.
+	 * {@inheritDoc} Set to true and the container will run the
+	 * {@link #process(List, Consumer, Exception, boolean, EOSMode)} method in a
+	 * transaction and, if a record is skipped and recovered, we will send its offset to
+	 * the transaction. Requires a {@link KafkaOperations}.
 	 * @param commitRecovered true to process in a transaction.
 	 * @since 2.3
 	 * @deprecated in favor of
@@ -187,8 +187,7 @@ public class DefaultAfterRollbackProcessor<K, V> extends FailedRecordProcessor
 	 * @param kafkaTemplate the template.
 	 * @since 2.2.5
 	 * @deprecated in favor of
-	 * {@link #DefaultAfterRollbackProcessor(BiConsumer, BackOff, KafkaOperations,
-	 * boolean)}.
+	 * {@link #DefaultAfterRollbackProcessor(BiConsumer, BackOff, KafkaOperations, boolean)}.
 	 * @see #setCommitRecovered(boolean)
 	 */
 	@Deprecated

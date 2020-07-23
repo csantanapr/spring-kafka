@@ -57,8 +57,8 @@ public interface AfterRollbackProcessor<K, V> {
 	 * @param recoverable the recoverable.
 	 * @since 2.2
 	 * @see #isProcessInTransaction()
-	 * @deprecated in favor of {@link #process(List, Consumer, Exception, boolean,
-	 * EOSMode)}.
+	 * @deprecated in favor of
+	 * {@link #process(List, Consumer, Exception, boolean, EOSMode)}.
 	 */
 	@Deprecated
 	void process(List<ConsumerRecord<K, V>> records, Consumer<K, V> consumer, Exception exception, boolean recoverable);

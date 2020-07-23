@@ -509,6 +509,7 @@ public class EmbeddedKafkaBroker implements InitializingBean, DisposableBean {
 	/**
 	 * Create an {@link AdminClient}; invoke the callback and reliably close the admin.
 	 * @param callback the callback.
+	 * @param <T> the function return type.
 	 * @return a map of results.
 	 * @since 2.5.4
 	 */
