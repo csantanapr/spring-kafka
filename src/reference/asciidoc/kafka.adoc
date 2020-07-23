@@ -898,7 +898,7 @@ The following constructors are available:
 public KafkaMessageListenerContainer(ConsumerFactory<K, V> consumerFactory,
                     ContainerProperties containerProperties)
 
-public KafkaMessageListenerContainer(ConsumerFactory<K, V> consumerFactory,
+KafkaMessageListenerContainer(ConsumerFactory<K, V> consumerFactory,
                     ContainerProperties containerProperties,
                     TopicPartitionOffset... topicPartitions)
 ----
