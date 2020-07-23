@@ -58,7 +58,7 @@ public interface AfterRollbackProcessor<K, V> {
 	 * @since 2.2
 	 * @see #isProcessInTransaction()
 	 * @deprecated in favor of
-	 * {@link #process(List, Consumer, Exception, boolean, EOSMode)}.
+	 * {@link #process(List, Consumer, Exception, boolean, ContainerProperties.EOSMode)}.
 	 */
 	@Deprecated
 	void process(List<ConsumerRecord<K, V>> records, Consumer<K, V> consumer, Exception exception, boolean recoverable);
@@ -71,8 +71,9 @@ public interface AfterRollbackProcessor<K, V> {
 	 * IMPORTANT: If invoked in a transaction when the listener was invoked with a single
 	 * record, the transaction id will be based on the container group.id and the
 	 * topic/partition of the failed record, to avoid issues with zombie fencing (unless
-	 * the {@link EOSMode} is {@link EOSMode#BETA}). So, generally, only its offset should
-	 * be sent to the transaction. For other behavior the process method should manage its
+	 * the {@link ContainerProperties.EOSMode} is
+	 * {@link ContainerProperties.EOSMode#BETA}). So, generally, only its offset should be
+	 * sent to the transaction. For other behavior the process method should manage its
 	 * own transaction.
 	 * @param records the records.
 	 * @param consumer the consumer.
@@ -98,13 +99,14 @@ public interface AfterRollbackProcessor<K, V> {
 	}
 
 	/**
-	 * Return true to invoke {@link #process(List, Consumer, Exception, boolean, EOSMode)}
+	 * Return true to invoke
+	 * {@link #process(List, Consumer, Exception, boolean, ContainerProperties.EOSMode)}
 	 * in a new transaction. Because the container cannot infer the desired behavior, the
 	 * processor is responsible for sending the offset to the transaction if it decides to
 	 * skip the failing record.
 	 * @return true to run in a transaction; default false.
 	 * @since 2.2.5
-	 * @see #process(List, Consumer, Exception, boolean, EOSMode)
+	 * @see #process(List, Consumer, Exception, boolean, ContainerProperties.EOSMode)
 	 */
 	default boolean isProcessInTransaction() {
 		return false;
