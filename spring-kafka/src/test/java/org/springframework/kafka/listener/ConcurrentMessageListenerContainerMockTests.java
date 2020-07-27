@@ -372,10 +372,12 @@ public class ConcurrentMessageListenerContainerMockTests {
 				.collect(Collectors.toMap(tp -> tp, tp -> 200L)));
 		given(consumer.offsetsForTimes(Collections.singletonMap(tp0, 42L)))
 				.willReturn(Collections.singletonMap(tp0, new OffsetAndTimestamp(73L, 42L)));
+		Map<TopicPartition, OffsetAndTimestamp> map = new HashMap<>(assignments.stream()
+				.collect(Collectors.toMap(tp -> tp,
+						tp -> new OffsetAndTimestamp(tp.equals(tp0) ? 73L : 92L, 43L))));
+		map.put(new TopicPartition("foo", 5), null);
 		given(consumer.offsetsForTimes(any()))
-				.willReturn(assignments.stream()
-					.collect(Collectors.toMap(tp -> tp,
-							tp -> new OffsetAndTimestamp(tp.equals(tp0) ? 73L : 92L, 43L))));
+				.willReturn(map);
 		given(consumerFactory.createConsumer("grp", "", "-0", KafkaTestUtils.defaultPropertyOverrides()))
 			.willReturn(consumer);
 		ContainerProperties containerProperties = new ContainerProperties("foo");
