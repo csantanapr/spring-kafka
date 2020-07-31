@@ -37,7 +37,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
@@ -51,6 +50,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.PartitionOffset;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -94,7 +94,10 @@ public class SeekToCurrentOnErrorRecordModeTests {
 		this.registry.stop();
 		assertThat(this.config.closeLatch.await(10, TimeUnit.SECONDS)).isTrue();
 		InOrder inOrder = inOrder(this.consumer);
-		inOrder.verify(this.consumer).subscribe(any(Collection.class), any(ConsumerRebalanceListener.class));
+		inOrder.verify(this.consumer).assign(any(Collection.class));
+		inOrder.verify(this.consumer).seek(new TopicPartition("foo", 0), 0L);
+		inOrder.verify(this.consumer).seek(new TopicPartition("foo", 1), 0L);
+		inOrder.verify(this.consumer).seek(new TopicPartition("foo", 2), 0L);
 		inOrder.verify(this.consumer).poll(Duration.ofMillis(ContainerProperties.DEFAULT_POLL_TIMEOUT));
 		inOrder.verify(this.consumer).commitSync(
 				Collections.singletonMap(new TopicPartition("foo", 0), new OffsetAndMetadata(1L)),
@@ -137,11 +140,14 @@ public class SeekToCurrentOnErrorRecordModeTests {
 
 		final CountDownLatch closeLatch = new CountDownLatch(1);
 
-		final CountDownLatch commitLatch = new CountDownLatch(7);
+		final CountDownLatch commitLatch = new CountDownLatch(6);
 
 		int count;
 
-		@KafkaListener(topics = "foo", groupId = "grp")
+		@KafkaListener(groupId = "grp",
+				topicPartitions = @org.springframework.kafka.annotation.TopicPartition(topic = "foo",
+						partitions = "#{'0,1,2'.split(',')}",
+						partitionOffsets = @PartitionOffset(partition = "*", initialOffset = "0")))
 		public void foo(String in, @Header(KafkaHeaders.DELIVERY_ATTEMPT) int delivery) {
 			this.contents.add(in);
 			this.deliveries.add(delivery);
@@ -168,11 +174,6 @@ public class SeekToCurrentOnErrorRecordModeTests {
 			final TopicPartition topicPartition0 = new TopicPartition("foo", 0);
 			final TopicPartition topicPartition1 = new TopicPartition("foo", 1);
 			final TopicPartition topicPartition2 = new TopicPartition("foo", 2);
-			willAnswer(i -> {
-				((ConsumerRebalanceListener) i.getArgument(1)).onPartitionsAssigned(
-						Collections.singletonList(topicPartition1));
-				return null;
-			}).given(consumer).subscribe(any(Collection.class), any(ConsumerRebalanceListener.class));
 			Map<TopicPartition, List<ConsumerRecord>> records1 = new LinkedHashMap<>();
 			records1.put(topicPartition0, Arrays.asList(
 					new ConsumerRecord("foo", 0, 0L, 0L, TimestampType.NO_TIMESTAMP_TYPE, 0, 0, 0, null, "foo"),
@@ -198,7 +199,7 @@ public class SeekToCurrentOnErrorRecordModeTests {
 						return new ConsumerRecords(records2);
 					default:
 						try {
-							Thread.sleep(500);
+							Thread.sleep(50);
 						}
 						catch (InterruptedException e) {
 							Thread.currentThread().interrupt();

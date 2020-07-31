@@ -18,6 +18,7 @@ package org.springframework.kafka.listener;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -890,7 +892,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 			else {
 				List<TopicPartitionOffset> topicPartitionsToAssign =
 						Arrays.asList(KafkaMessageListenerContainer.this.topicPartitions);
-				this.definedPartitions = new HashMap<>(topicPartitionsToAssign.size());
+				this.definedPartitions = new LinkedHashMap<>(topicPartitionsToAssign.size());
 				for (TopicPartitionOffset topicPartition : topicPartitionsToAssign) {
 					this.definedPartitions.put(topicPartition.getTopicPartition(),
 							new OffsetMetadata(topicPartition.getOffset(), topicPartition.isRelativeToCurrent(),
@@ -2108,7 +2110,7 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 			 * called until we poll() the consumer. Users can use a ConsumerAwareRebalanceListener
 			 * or a ConsumerSeekAware listener in that case.
 			 */
-			Map<TopicPartition, OffsetMetadata> partitions = new HashMap<>(this.definedPartitions);
+			Map<TopicPartition, OffsetMetadata> partitions = new LinkedHashMap<>(this.definedPartitions);
 			Set<TopicPartition> beginnings = partitions.entrySet().stream()
 					.filter(e -> SeekPosition.BEGINNING.equals(e.getValue().seekPosition))
 					.map(Entry::getKey)
@@ -2152,6 +2154,12 @@ public class KafkaMessageListenerContainer<K, V> // NOSONAR line count
 								+ " at " + newOffsetToLog + ". Position is " + this.consumer.position(topicPartition));
 					}
 				}
+			}
+			if (this.consumerSeekAwareListener != null) {
+				this.consumerSeekAwareListener.onPartitionsAssigned(partitions.keySet().stream()
+							.map(tp -> new SimpleEntry<>(tp, this.consumer.position(tp)))
+							.collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue())),
+						this.seekCallback);
 			}
 		}
 
