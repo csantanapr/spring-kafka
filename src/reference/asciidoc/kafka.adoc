@@ -3695,7 +3695,7 @@ The method must be declared as `public static`, have one of three signatures `(S
 * `JsonDeserializer.KEY_TYPE_METHOD` : `spring.json.key.type.method`
 * `JsonDeserializer.VALUE_TYPE_METHOD` : `spring.json.value.type.method`
 
-You can use arbitrary headers or introspect the data to determine the type.
+You can use arbitrary headers or inspect the data to determine the type.
 
 ====
 .Example
@@ -3717,7 +3717,7 @@ public static JavaType thingOneOrThingTwo(byte[] data, Headers headers) {
 ----
 ====
 
-For more sophisticated data introspection consider using `JsonPath` or similar but, the simpler the test to determine the type, the more efficient the process will be.
+For more sophisticated data inspection consider using `JsonPath` or similar but, the simpler the test to determine the type, the more efficient the process will be.
 
 The following is an example of creating the deserializer programmatically (when providing the consumer factory with the deserializer in the constructor):
 
