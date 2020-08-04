@@ -112,7 +112,7 @@ public abstract class FailedRecordProcessor extends KafkaExceptionLogLevelAware 
 	 * Set to false to immediately attempt to recover on the next attempt instead
 	 * of repeating the BackOff cycle when recovery fails.
 	 * @param resetStateOnRecoveryFailure false to retain state.
-	 * @since 3.5.5
+	 * @since 2.5.5
 	 */
 	public void setResetStateOnRecoveryFailure(boolean resetStateOnRecoveryFailure) {
 		this.failureTracker.setResetStateOnRecoveryFailure(resetStateOnRecoveryFailure);
