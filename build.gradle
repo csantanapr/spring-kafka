@@ -61,7 +61,7 @@ ext {
 	micrometerVersion = '1.5.2'
 	mockitoVersion = '3.3.3'
 	reactorVersion = 'Dysprosium-SR9'
-	scalaVersion = '2.12'
+	scalaVersion = '2.13'
 	springDataCommonsVersion = '2.3.1.RELEASE'
 	springRetryVersion = '1.3.0'
 	springVersion = '5.2.7.RELEASE'
