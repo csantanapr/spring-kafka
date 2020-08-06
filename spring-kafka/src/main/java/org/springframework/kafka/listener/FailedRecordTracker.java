@@ -142,8 +142,8 @@ class FailedRecordTracker {
 		if (this.backOffFunction == null) {
 			return this.backOff;
 		}
-		BackOff backOff = this.backOffFunction.apply(record, exception);
-		return backOff != null ? backOff : this.backOff;
+		BackOff backOffToUse = this.backOffFunction.apply(record, exception);
+		return backOffToUse != null ? backOffToUse : this.backOff;
 	}
 
 	private void attemptRecovery(ConsumerRecord<?, ?> record, Exception exception, @Nullable TopicPartition tp) {
