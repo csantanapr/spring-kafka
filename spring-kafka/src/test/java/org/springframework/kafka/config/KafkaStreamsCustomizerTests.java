@@ -100,7 +100,7 @@ public class KafkaStreamsCustomizerTests {
 				.functionCounter()
 				.count())
 					.isGreaterThanOrEqualTo(0);
-		assertThat(this.meterRegistry.get("kafka.producer.node.incoming.byte.total")
+		assertThat(this.meterRegistry.get("kafka.producer.incoming.byte.total")
 				.tag("customTag", "stream")
 				.tag("spring.id", KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_BUILDER_BEAN_NAME)
 				.functionCounter()
