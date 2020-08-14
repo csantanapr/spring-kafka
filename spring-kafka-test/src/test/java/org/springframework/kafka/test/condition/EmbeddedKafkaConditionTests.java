@@ -29,13 +29,15 @@ import org.springframework.kafka.test.utils.KafkaTestUtils;
  * @since 2.3
  *
  */
-@EmbeddedKafka(bootstrapServersProperty = "my.bss.property", count = 2)
+@EmbeddedKafka(bootstrapServersProperty = "my.bss.property", count = 2, controlledShutdown = true, partitions = 3)
 public class EmbeddedKafkaConditionTests {
 
 	@Test
 	public void test(EmbeddedKafkaBroker broker) {
 		assertThat(broker.getBrokersAsString()).isNotNull();
 		assertThat(KafkaTestUtils.getPropertyValue(broker, "brokerListProperty")).isEqualTo("my.bss.property");
+		assertThat(KafkaTestUtils.getPropertyValue(broker, "controlledShutdown")).isEqualTo(Boolean.TRUE);
+		assertThat(broker.getPartitionsPerTopic()).isEqualTo(3);
 	}
 
 }

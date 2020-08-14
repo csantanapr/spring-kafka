@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2019-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ import reactor.util.function.Tuple2;
  *
  * @since 2.3.0
  */
-@EmbeddedKafka(topics = ReactiveKafkaProducerTemplateIntegrationTests.REACTIVE_INT_KEY_TOPIC, partitions = 1)
+@EmbeddedKafka(topics = ReactiveKafkaProducerTemplateIntegrationTests.REACTIVE_INT_KEY_TOPIC, partitions = 2)
 public class ReactiveKafkaProducerTemplateIntegrationTests {
 
 	private static final int DEFAULT_PARTITIONS_COUNT = 2;
