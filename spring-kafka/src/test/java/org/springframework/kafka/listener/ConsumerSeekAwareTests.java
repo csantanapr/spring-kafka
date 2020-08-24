@@ -54,21 +54,16 @@ public class ConsumerSeekAwareTests {
 		var first = new AtomicBoolean(true);
 		var map1 = new LinkedHashMap<>(Map.of(new TopicPartition("foo", 0), 0L, new TopicPartition("foo", 1), 0L));
 		var map2 = new LinkedHashMap<>(Map.of(new TopicPartition("foo", 2), 0L, new TopicPartition("foo", 3), 0L));
-		var register = new Callable<Void>() {
-
-			@Override
-			public Void call() {
-				if (first.getAndSet(false)) {
-					csa.registerSeekCallback(cb1);
-					csa.onPartitionsAssigned(map1, null);
-				}
-				else {
-					csa.registerSeekCallback(cb2);
-					csa.onPartitionsAssigned(map2, null);
-				}
-				return null;
+		var register = (Callable<Void>) () -> {
+			if (first.getAndSet(false)) {
+				csa.registerSeekCallback(cb1);
+				csa.onPartitionsAssigned(map1, null);
 			}
-
+			else {
+				csa.registerSeekCallback(cb2);
+				csa.onPartitionsAssigned(map2, null);
+			}
+			return null;
 		};
 		exec1.submit(register).get();
 		exec2.submit(register).get();
@@ -81,19 +76,14 @@ public class ConsumerSeekAwareTests {
 		csa.seekToTimestamp(42L);
 		verify(cb1).seekToTimestamp(new LinkedList<>(map1.keySet()), 42L);
 		verify(cb2).seekToTimestamp(new LinkedList<>(map2.keySet()), 42L);
-		var revoke1 = new Callable<Void>() {
-
-			@Override
-			public Void call() {
-				if (!first.getAndSet(true)) {
-					csa.onPartitionsRevoked(Collections.singletonList(map1.keySet().iterator().next()));
-				}
-				else {
-					csa.onPartitionsRevoked(Collections.singletonList(map2.keySet().iterator().next()));
-				}
-				return null;
+		var revoke1 = (Callable<Void>) () -> {
+			if (!first.getAndSet(true)) {
+				csa.onPartitionsRevoked(Collections.singletonList(map1.keySet().iterator().next()));
 			}
-
+			else {
+				csa.onPartitionsRevoked(Collections.singletonList(map2.keySet().iterator().next()));
+			}
+			return null;
 		};
 		exec1.submit(revoke1).get();
 		exec2.submit(revoke1).get();
@@ -102,33 +92,23 @@ public class ConsumerSeekAwareTests {
 		csa.seekToTimestamp(43L);
 		verify(cb1).seekToTimestamp(new LinkedList<>(map1.keySet()), 43L);
 		verify(cb2).seekToTimestamp(new LinkedList<>(map2.keySet()), 43L);
-		var revoke2 = new Callable<Void>() {
-
-			@Override
-			public Void call() {
-				if (first.getAndSet(false)) {
-					csa.onPartitionsRevoked(Collections.singletonList(map1.keySet().iterator().next()));
-				}
-				else {
-					csa.onPartitionsRevoked(Collections.singletonList(map2.keySet().iterator().next()));
-				}
-				return null;
+		var revoke2 = (Callable<Void>) () -> {
+			if (first.getAndSet(false)) {
+				csa.onPartitionsRevoked(Collections.singletonList(map1.keySet().iterator().next()));
 			}
-
+			else {
+				csa.onPartitionsRevoked(Collections.singletonList(map2.keySet().iterator().next()));
+			}
+			return null;
 		};
 		exec1.submit(revoke2).get();
 		exec2.submit(revoke2).get();
 		assertThat(KafkaTestUtils.getPropertyValue(csa, "callbacks", Map.class)).isEmpty();
 		assertThat(KafkaTestUtils.getPropertyValue(csa, "callbacksToTopic", Map.class)).isEmpty();
-		var checkTL = new Callable<Void>() {
-
-			@Override
-			public Void call() throws Exception {
-				csa.unregisterSeekCallback();
-				assertThat(KafkaTestUtils.getPropertyValue(csa, "callbackForThread", ThreadLocal.class).get()).isNull();
-				return null;
-			}
-
+		var checkTL = (Callable<Void>) () -> {
+			csa.unregisterSeekCallback();
+			assertThat(KafkaTestUtils.getPropertyValue(csa, "callbackForThread", ThreadLocal.class).get()).isNull();
+			return null;
 		};
 		exec1.submit(checkTL).get();
 		exec2.submit(checkTL).get();
