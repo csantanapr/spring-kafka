@@ -226,7 +226,8 @@ public @interface KafkaListener {
 	/**
 	 * Kafka consumer properties; they will supersede any properties with the same name
 	 * defined in the consumer factory (if the consumer factory supports property overrides).
-	 * <h3>Supported Syntax</h3>
+	 * <p>
+	 * <b>Supported Syntax</b>
 	 * <p>The supported syntax for key-value pairs is the same as the
 	 * syntax defined for entries in a Java
 	 * {@linkplain java.util.Properties#load(java.io.Reader) properties file}:
