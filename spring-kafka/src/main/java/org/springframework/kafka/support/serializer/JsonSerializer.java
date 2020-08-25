@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 the original author or authors.
+ * Copyright 2016-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 /**
  * Generic {@link org.apache.kafka.common.serialization.Serializer Serializer} for sending
@@ -63,17 +66,32 @@ public class JsonSerializer<T> implements Serializer<T> {
 
 	protected boolean addTypeInfo = true; // NOSONAR
 
+	private ObjectWriter writer;
+
 	protected Jackson2JavaTypeMapper typeMapper = new DefaultJackson2JavaTypeMapper(); // NOSONAR
 
 	private boolean typeMapperExplicitlySet = false;
 
 	public JsonSerializer() {
-		this(JacksonUtils.enhancedObjectMapper());
+		this((JavaType) null, JacksonUtils.enhancedObjectMapper());
+	}
+
+	public JsonSerializer(TypeReference<? super T> targetType) {
+		this(targetType, JacksonUtils.enhancedObjectMapper());
 	}
 
 	public JsonSerializer(ObjectMapper objectMapper) {
+		this((JavaType) null, objectMapper);
+	}
+
+	public JsonSerializer(TypeReference<? super T> targetType, ObjectMapper objectMapper) {
+		this(targetType == null ? null : objectMapper.constructType(targetType.getType()), objectMapper);
+	}
+
+	public JsonSerializer(JavaType targetType, ObjectMapper objectMapper) {
 		Assert.notNull(objectMapper, "'objectMapper' must not be null.");
 		this.objectMapper = objectMapper;
+		this.writer = objectMapper.writerFor(targetType);
 	}
 
 	public boolean isAddTypeInfo() {
@@ -174,7 +192,7 @@ public class JsonSerializer<T> implements Serializer<T> {
 			return null;
 		}
 		try {
-			return this.objectMapper.writeValueAsBytes(data);
+			return this.writer.writeValueAsBytes(data);
 		}
 		catch (IOException ex) {
 			throw new SerializationException("Can't serialize data [" + data + "] for topic [" + topic + "]", ex);
@@ -184,6 +202,43 @@ public class JsonSerializer<T> implements Serializer<T> {
 	@Override
 	public void close() {
 		// No-op
+	}
+
+	/**
+	 * Copies this serializer with same configuration, except new target type reference is used.
+	 * @param newTargetType type reference forced for serialization, not null
+	 * @param <X> new serialization source type
+	 * @return new instance of serializer with type changes
+	 * @since 2.6
+	 */
+	public <X> JsonSerializer<X> copyWithType(Class<? super X> newTargetType) {
+		return copyWithType(this.objectMapper.constructType(newTargetType));
+	}
+
+	/**
+	 * Copies this serializer with same configuration, except new target type reference is used.
+	 * @param newTargetType type reference forced for serialization, not null
+	 * @param <X> new serialization source type
+	 * @return new instance of serializer with type changes
+	 * @since 2.6
+	 */
+	public <X> JsonSerializer<X> copyWithType(TypeReference<? super X> newTargetType) {
+		return copyWithType(this.objectMapper.constructType(newTargetType.getType()));
+	}
+
+	/**
+	 * Copies this serializer with same configuration, except new target java type is used.
+	 * @param newTargetType java type forced for serialization, not null
+	 * @param <X> new serialization source type
+	 * @return new instance of serializer with type changes
+	 * @since 2.6
+	 */
+	public <X> JsonSerializer<X> copyWithType(JavaType newTargetType) {
+		JsonSerializer<X> result = new JsonSerializer<>(newTargetType, this.objectMapper);
+		result.addTypeInfo = this.addTypeInfo;
+		result.typeMapper = this.typeMapper;
+		result.typeMapperExplicitlySet = this.typeMapperExplicitlySet;
+		return result;
 	}
 
 	// Fluent API

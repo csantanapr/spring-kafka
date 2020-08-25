@@ -142,7 +142,7 @@ public class JsonDeserializer<T> implements Deserializer<T> {
 	 * {@link ObjectMapper}.
 	 * @param targetType the target type to use if no type info headers are present.
 	 */
-	public JsonDeserializer(Class<? super T> targetType) {
+	public JsonDeserializer(@Nullable Class<? super T> targetType) {
 		this(targetType, true);
 	}
 
@@ -151,7 +151,17 @@ public class JsonDeserializer<T> implements Deserializer<T> {
 	 * @param targetType the target type reference to use if no type info headers are present.
 	 * @since 2.3
 	 */
-	public JsonDeserializer(TypeReference<? super T> targetType) {
+	public JsonDeserializer(@Nullable TypeReference<? super T> targetType) {
+		this(targetType, true);
+	}
+
+
+	/**
+	 * Construct an instance with the provided target type, and a default {@link ObjectMapper}.
+	 * @param targetType the target java type to use if no type info headers are present.
+	 * @since 2.3
+	 */
+	public JsonDeserializer(@Nullable JavaType targetType) {
 		this(targetType, true);
 	}
 
@@ -180,6 +190,18 @@ public class JsonDeserializer<T> implements Deserializer<T> {
 	}
 
 	/**
+	 * Construct an instance with the provided target type, and
+	 * useHeadersIfPresent with a default {@link ObjectMapper}.
+	 * @param targetType the target java type.
+	 * @param useHeadersIfPresent true to use headers if present and fall back to target
+	 * type if not.
+	 * @since 2.3
+	 */
+	public JsonDeserializer(JavaType targetType, boolean useHeadersIfPresent) {
+		this(targetType, JacksonUtils.enhancedObjectMapper(), useHeadersIfPresent);
+	}
+
+	/**
 	 * Construct an instance with the provided target type, and {@link ObjectMapper}.
 	 * @param targetType the target type to use if no type info headers are present.
 	 * @param objectMapper the mapper. type if not.
@@ -194,6 +216,15 @@ public class JsonDeserializer<T> implements Deserializer<T> {
 	 * @param objectMapper the mapper. type if not.
 	 */
 	public JsonDeserializer(TypeReference<? super T> targetType, ObjectMapper objectMapper) {
+		this(targetType, objectMapper, true);
+	}
+
+	/**
+	 * Construct an instance with the provided target type, and {@link ObjectMapper}.
+	 * @param targetType the target java type to use if no type info headers are present.
+	 * @param objectMapper the mapper. type if not.
+	 */
+	public JsonDeserializer(JavaType targetType, ObjectMapper objectMapper) {
 		this(targetType, objectMapper, true);
 	}
 
@@ -515,6 +546,43 @@ public class JsonDeserializer<T> implements Deserializer<T> {
 	@Override
 	public void close() {
 		// No-op
+	}
+
+	/**
+	 * Copies this deserializer with same configuration, except new target type is used.
+	 * @param newTargetType type used for when type headers are missing, not null
+	 * @param <X> new deserialization result type
+	 * @return new instance of deserializer with type changes
+	 * @since 2.6
+	 */
+	public <X> JsonDeserializer<X> copyWithType(Class<? super X> newTargetType) {
+		return copyWithType(this.objectMapper.constructType(newTargetType));
+	}
+
+	/**
+	 * Copies this deserializer with same configuration, except new target type reference is used.
+	 * @param newTargetType type reference used for when type headers are missing, not null
+	 * @param <X> new deserialization result type
+	 * @return new instance of deserializer with type changes
+	 * @since 2.6
+	 */
+	public <X> JsonDeserializer<X> copyWithType(TypeReference<? super X> newTargetType) {
+		return copyWithType(this.objectMapper.constructType(newTargetType.getType()));
+	}
+
+	/**
+	 * Copies this deserializer with same configuration, except new target java type is used.
+	 * @param newTargetType java type used for when type headers are missing, not null
+	 * @param <X> new deserialization result type
+	 * @return new instance of deserializer with type changes
+	 * @since 2.6
+	 */
+	public <X> JsonDeserializer<X> copyWithType(JavaType newTargetType) {
+		JsonDeserializer<X> result = new JsonDeserializer<>(newTargetType, this.objectMapper, this.useTypeHeaders);
+		result.removeTypeHeaders = this.removeTypeHeaders;
+		result.typeMapper = this.typeMapper;
+		result.typeMapperExplicitlySet = this.typeMapperExplicitlySet;
+		return result;
 	}
 
 	// Fluent API

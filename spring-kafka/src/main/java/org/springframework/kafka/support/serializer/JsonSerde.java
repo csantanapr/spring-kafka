@@ -28,6 +28,8 @@ import org.springframework.kafka.support.converter.Jackson2JavaTypeMapper;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -53,29 +55,45 @@ public class JsonSerde<T> implements Serde<T> {
 	private final JsonDeserializer<T> jsonDeserializer;
 
 	public JsonSerde() {
-		this((ObjectMapper) null);
+		this((JavaType) null, JacksonUtils.enhancedObjectMapper());
 	}
 
-	public JsonSerde(Class<? super T> targetType) {
-		this(targetType, null);
+	public JsonSerde(@Nullable Class<? super T> targetType) {
+		this(targetType, JacksonUtils.enhancedObjectMapper());
+	}
+
+	public JsonSerde(@Nullable TypeReference<? super T> targetType) {
+		this(targetType, JacksonUtils.enhancedObjectMapper());
+	}
+
+	public JsonSerde(@Nullable JavaType targetType) {
+		this(targetType, JacksonUtils.enhancedObjectMapper());
 	}
 
 	public JsonSerde(ObjectMapper objectMapper) {
-		this(null, objectMapper);
+		this((JavaType) null, objectMapper);
 	}
 
-	@SuppressWarnings("unchecked")
-	public JsonSerde(@Nullable Class<? super T> targetTypeArg, @Nullable ObjectMapper objectMapperArg) {
-		ObjectMapper objectMapper = objectMapperArg;
-		Class<T> targetType = (Class<T>) targetTypeArg;
-		if (objectMapper == null) {
-			objectMapper = JacksonUtils.enhancedObjectMapper();
+	public JsonSerde(@Nullable TypeReference<? super T> targetType, ObjectMapper objectMapper) {
+		this(targetType == null ? null : objectMapper.constructType(targetType.getType()), objectMapper);
+	}
+
+	public JsonSerde(@Nullable Class<? super T> targetType, ObjectMapper objectMapper) {
+		this(targetType == null ? null : objectMapper.constructType(targetType), objectMapper);
+	}
+
+	public JsonSerde(@Nullable JavaType targetTypeArg, @Nullable ObjectMapper objectMapperArg) {
+		ObjectMapper objectMapper = objectMapperArg == null ? JacksonUtils.enhancedObjectMapper() : objectMapperArg;
+		JavaType actualJavaType;
+		if (targetTypeArg != null) {
+			actualJavaType = targetTypeArg;
 		}
-		this.jsonSerializer = new JsonSerializer<>(objectMapper);
-		if (targetType == null) {
-			targetType = (Class<T>) ResolvableType.forClass(getClass()).getSuperType().resolveGeneric(0);
+		else {
+			Class<?> resolvedGeneric = ResolvableType.forClass(getClass()).getSuperType().resolveGeneric(0);
+			actualJavaType = resolvedGeneric != null ? objectMapper.constructType(resolvedGeneric) : null;
 		}
-		this.jsonDeserializer = new JsonDeserializer<>(targetType, objectMapper);
+		this.jsonSerializer = new JsonSerializer<>(actualJavaType, objectMapper);
+		this.jsonDeserializer = new JsonDeserializer<>(actualJavaType, objectMapper);
 	}
 
 	public JsonSerde(JsonSerializer<T> jsonSerializer, JsonDeserializer<T> jsonDeserializer) {
@@ -105,6 +123,42 @@ public class JsonSerde<T> implements Serde<T> {
 	@Override
 	public Deserializer<T> deserializer() {
 		return this.jsonDeserializer;
+	}
+
+	/**
+	 * Copies this serde with same configuration, except new target type is used.
+	 * @param newTargetType type reference forced for serialization, and used as default for deserialization, not null
+	 * @param <X> new deserialization result type and serialization source type
+	 * @return new instance of serde with type changes
+	 * @since 2.6
+	 */
+	public <X> JsonSerde<X> copyWithType(Class<? super X> newTargetType) {
+		return new JsonSerde<>(this.jsonSerializer.copyWithType(newTargetType),
+			this.jsonDeserializer.copyWithType(newTargetType));
+	}
+
+	/**
+	 * Copies this serde with same configuration, except new target type reference is used.
+	 * @param newTargetType type reference forced for serialization, and used as default for deserialization, not null
+	 * @param <X> new deserialization result type and serialization source type
+	 * @return new instance of serde with type changes
+	 * @since 2.6
+	 */
+	public <X> JsonSerde<X> copyWithType(TypeReference<? super X> newTargetType) {
+		return new JsonSerde<>(this.jsonSerializer.copyWithType(newTargetType),
+			this.jsonDeserializer.copyWithType(newTargetType));
+	}
+
+	/**
+	 * Copies this serde with same configuration, except new target java type is used.
+	 * @param newTargetType java type forced for serialization, and used as default for deserialization, not null
+	 * @param <X> new deserialization result type and serialization source type
+	 * @return new instance of serde with type changes
+	 * @since 2.6
+	 */
+	public <X> JsonSerde<X> copyWithType(JavaType newTargetType) {
+		return new JsonSerde<>(this.jsonSerializer.copyWithType(newTargetType),
+			this.jsonDeserializer.copyWithType(newTargetType));
 	}
 
 	// Fluent API
