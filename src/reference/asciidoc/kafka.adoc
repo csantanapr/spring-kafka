@@ -656,10 +656,29 @@ In this case, all instances receive each reply, but only the instance that sent 
 This may be useful for auto-scaling, but with the overhead of additional network traffic and the small cost of discarding each unwanted reply.
 When you use this setting, we recommend that you set the template's `sharedReplyTopic` to `true`, which reduces the logging level of unexpected replies to DEBUG instead of the default ERROR.
 
+The following is an example of configuring the reply container to use the same shared reply topic:
+
+====
+[source, java]
+----
+@Bean
+public ConcurrentMessageListenerContainer<String, String> replyContainer(
+        ConcurrentKafkaListenerContainerFactory<String, String> containerFactory) {
+
+    ConcurrentMessageListenerContainer<String, String> container = containerFactory.createContainer("topic2");
+    container.getContainerProperties().setGroupId(UUID.randomUUID().toString()); // unique
+    Properties props = new Properties();
+    props.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest"); // so the new group doesn't get old replies
+    container.getContainerProperties().setKafkaConsumerProperties(props);
+    return container;
+}
+----
+====
+
 IMPORTANT: If you have multiple client instances and you do not configure them as discussed in the preceding paragraph, each instance needs a dedicated reply topic.
 An alternative is to set the `KafkaHeaders.REPLY_PARTITION` and use a dedicated partition for each instance.
 The `Header` contains a four-byte int (big-endian).
-The server must use this header to route the reply to the correct topic (`@KafkaListener` does this).
+The server must use this header to route the reply to the correct partition (`@KafkaListener` does this).
 In this case, though, the reply container must not use Kafka's group management feature and must be configured to listen on a fixed partition (by using a `TopicPartitionOffset` in its `ContainerProperties` constructor).
 
 NOTE: The `DefaultKafkaHeaderMapper` requires Jackson to be on the classpath (for the `@KafkaListener`).
