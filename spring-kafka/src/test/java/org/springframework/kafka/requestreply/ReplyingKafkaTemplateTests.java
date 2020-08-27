@@ -338,37 +338,6 @@ public class ReplyingKafkaTemplateTests {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testTimeout() throws Exception {
-		ReplyingKafkaTemplate<Integer, String, String> template = createTemplate(A_REPLY);
-		try {
-			template.setDefaultReplyTimeout(Duration.ofMillis(1));
-			ProducerRecord<Integer, String> record = new ProducerRecord<>(A_REQUEST, "fiz");
-			record.headers().add(new RecordHeader(KafkaHeaders.REPLY_TOPIC, A_REPLY.getBytes()));
-			RequestReplyFuture<Integer, String, String> future = template.sendAndReceive(record);
-			future.getSendFuture().get(10, TimeUnit.SECONDS); // send ok
-			try {
-				future.get(30, TimeUnit.SECONDS);
-				fail("Expected Exception");
-			}
-			catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				throw e;
-			}
-			catch (ExecutionException e) {
-				assertThat(e)
-					.hasCauseExactlyInstanceOf(KafkaReplyTimeoutException.class)
-					.hasMessageContaining("Reply timed out");
-			}
-			assertThat(KafkaTestUtils.getPropertyValue(template, "futures", Map.class)).isEmpty();
-		}
-		finally {
-			template.stop();
-			template.destroy();
-		}
-	}
-
 	@Test
 	public void testGoodWithSimpleMapper() throws Exception {
 		ReplyingKafkaTemplate<Integer, String, String> template = createTemplate(B_REPLY);
