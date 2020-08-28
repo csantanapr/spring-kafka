@@ -68,7 +68,7 @@ public class Application {
 		typeMapper.addTrustedPackages("com.common");
 		Map<String, Class<?>> mappings = new HashMap<>();
 		mappings.put("foo", Foo2.class);
-		mappings.put("bar", Bar2.class);
+		//mappings.put("bar", Bar2.class);
 		typeMapper.setIdClassMapping(mappings);
 		converter.setTypeMapper(typeMapper);
 		return converter;
@@ -79,10 +79,12 @@ public class Application {
 		return new NewTopic("foos", 1, (short) 1);
 	}
 
+	/*
 	@Bean
 	public NewTopic bars() {
 		return new NewTopic("bars", 1, (short) 1);
 	}
+	*/
 
 	@Bean
 	public ApplicationRunner runner() {

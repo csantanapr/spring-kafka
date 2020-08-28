@@ -8,3 +8,10 @@ spring:
         isolation.level: read_committed
     listener:
       type: batch
+    bootstrap-servers: broker-0-jsqyf8hq36k41p6p.kafka.svc04.us-south.eventstreams.cloud.ibm.com:9093,broker-3-jsqyf8hq36k41p6p.kafka.svc04.us-south.eventstreams.cloud.ibm.com:9093,broker-2-jsqyf8hq36k41p6p.kafka.svc04.us-south.eventstreams.cloud.ibm.com:9093,broker-4-jsqyf8hq36k41p6p.kafka.svc04.us-south.eventstreams.cloud.ibm.com:9093,broker-1-jsqyf8hq36k41p6p.kafka.svc04.us-south.eventstreams.cloud.ibm.com:9093,broker-5-jsqyf8hq36k41p6p.kafka.svc04.us-south.eventstreams.cloud.ibm.com:9093
+    ssl:
+      protocol: TLSv1.2
+    properties:
+      sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="token" password="<IBM IAM API KEY>";
+      sasl.mechanism: PLAIN
+      security.protocol: SASL_SSL

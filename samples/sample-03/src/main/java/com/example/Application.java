@@ -75,25 +75,30 @@ public class Application {
 	@KafkaListener(id = "fooGroup2", topics = "topic2")
 	public void listen1(List<Foo2> foos) throws IOException {
 		LOGGER.info("Received: " + foos);
-		foos.forEach(f -> kafkaTemplate.send("topic3", f.getFoo().toUpperCase()));
+		//foos.forEach(f -> kafkaTemplate.send("topic3", f.getFoo().toUpperCase()));
+		foos.forEach(f -> LOGGER.info(f.getFoo().toUpperCase()));
 		LOGGER.info("Messages sent, hit Enter to commit tx");
 		System.in.read();
 	}
 
+	/*
 	@KafkaListener(id = "fooGroup3", topics = "topic3")
 	public void listen2(List<String> in) {
 		LOGGER.info("Received: " + in);
 		LATCH.countDown();
 	}
+	*/
 
 	@Bean
 	public NewTopic topic2() {
 		return TopicBuilder.name("topic2").partitions(1).replicas(1).build();
 	}
 
+	/*
 	@Bean
 	public NewTopic topic3() {
 		return TopicBuilder.name("topic3").partitions(1).replicas(1).build();
 	}
+	*/
 
 }

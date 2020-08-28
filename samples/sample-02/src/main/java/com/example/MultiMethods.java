@@ -29,7 +29,7 @@ import com.common.Foo2;
  *
  */
 @Component
-@KafkaListener(id = "multiGroup", topics = { "foos", "bars" })
+@KafkaListener(id = "multiGroup", topics = { "foos"})
 public class MultiMethods {
 
 	@KafkaHandler
@@ -37,10 +37,12 @@ public class MultiMethods {
 		System.out.println("Received: " + foo);
 	}
 
+	/*
 	@KafkaHandler
 	public void bar(Bar2 bar) {
 		System.out.println("Received: " + bar);
 	}
+	*/
 
 	@KafkaHandler(isDefault = true)
 	public void unknown(Object object) {
